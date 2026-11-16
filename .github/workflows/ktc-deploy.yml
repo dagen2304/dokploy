@@ -1,10 +1,10 @@
 name: KTC - Build & Deploy
 
-# Se lance quand vous poussez un tag de version (ex : git tag v0.1.0 && git push origin v0.1.0)
+# Se lance quand vous poussez un tag de version (ex : git tag ktc-v0.1.0 && git push origin ktc-v0.1.0)
 # ou manuellement depuis l'onglet Actions.
 on:
   push:
-    tags: ["v*"]
+    tags: ["ktc-v*"]
   workflow_dispatch:
 
 permissions:
