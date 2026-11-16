@@ -563,6 +563,13 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																	})
 																		.then((domain) => {
 																			field.onChange(domain);
+																			if (!domain.includes("sslip.io")) {
+																				form.setValue("https", true);
+																				form.setValue(
+																					"certificateType",
+																					"letsencrypt",
+																				);
+																			}
 																		})
 																		.catch((err) => {
 																			toast.error(err.message);
@@ -577,7 +584,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 															sideOffset={5}
 															className="max-w-40"
 														>
-															<p>Generate sslip.io domain</p>
+															<p>Generate domain</p>
 														</TooltipContent>
 													</Tooltip>
 												</TooltipProvider>

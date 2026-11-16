@@ -47,11 +47,30 @@ export const createDomain = async (input: z.infer<typeof apiCreateDomain>) => {
 	return result;
 };
 
+export const buildAppsWildcardHost = (
+	appName: string,
+	appsWildcardDomain: string,
+) => {
+	const baseDomain = appsWildcardDomain
+		.trim()
+		.replace(/^\*\./, "")
+		.replace(/\.$/, "")
+		.toLowerCase();
+	// A DNS label is limited to 63 characters.
+	const label = appName.toLowerCase().slice(0, 63).replace(/-+$/, "");
+	return `${label}.${baseDomain}`;
+};
+
 export const generateTraefikMeDomain = async (
 	appName: string,
 	_userId: string,
 	serverId?: string,
 ) => {
+	const appsWildcardDomain = process.env.APPS_WILDCARD_DOMAIN?.trim();
+	if (appsWildcardDomain) {
+		return buildAppsWildcardHost(appName, appsWildcardDomain);
+	}
+
 	if (serverId) {
 		const server = await findServerById(serverId);
 		return generateRandomDomain({
