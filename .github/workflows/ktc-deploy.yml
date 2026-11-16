@@ -60,6 +60,10 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            set -e
+            # Pull first: if the image is unreachable (e.g. private package),
+            # stop here instead of leaving the panel without a runnable image.
+            docker pull ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
             docker service update --with-registry-auth \
               --image ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }} \
               dokploy
