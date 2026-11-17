@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { appRouter } from "@/server/api/root";
 import { api } from "@/utils/api";
 import { useWhitelabeling } from "@/utils/hooks/use-whitelabeling";
+import { BRAND_NAME } from "@/lib/brand";
 
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
 	<div className="flex flex-col gap-1">
@@ -49,7 +50,7 @@ const SandboxPage = (
 		api.sandbox.kill.useMutation();
 	const { mutateAsync: remove } = api.sandbox.remove.useMutation();
 	const { config: whitelabeling } = useWhitelabeling();
-	const appName = whitelabeling?.appName || "Dokploy";
+	const appName = whitelabeling?.appName || BRAND_NAME;
 	const listHref = "/dashboard/sandboxes";
 	const isRunning = data?.status === "running";
 

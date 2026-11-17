@@ -19,11 +19,12 @@ import {
 import { appRouter } from "@/server/api/root";
 import { api } from "@/utils/api";
 import { useWhitelabeling } from "@/utils/hooks/use-whitelabeling";
+import { BRAND_NAME } from "@/lib/brand";
 
 const SandboxesPage = () => {
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const { config: whitelabeling } = useWhitelabeling();
-	const appName = whitelabeling?.appName || "Dokploy";
+	const appName = whitelabeling?.appName || BRAND_NAME;
 
 	return (
 		<div className="pb-10">
