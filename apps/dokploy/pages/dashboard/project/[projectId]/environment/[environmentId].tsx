@@ -1146,7 +1146,7 @@ const EnvironmentPage = (
 												)}
 												onCheckedChange={handleSelectAll}
 											/>
-											<span className="text-sm">
+											<span className="text-sm whitespace-nowrap">
 												Select All{" "}
 												{selectedServices.length > 0 &&
 													`(${selectedServices.length}/${filteredServices.length})`}
@@ -1503,8 +1503,8 @@ const EnvironmentPage = (
 										</DropdownMenu>
 									</div>
 
-									<div className="flex flex-col gap-2 lg:flex-row lg:gap-4 lg:items-center">
-										<div className="w-full relative">
+									<div className="flex min-w-0 flex-col gap-2 lg:flex-row lg:flex-wrap lg:gap-4 lg:items-center 2xl:flex-1 2xl:justify-end">
+										<div className="w-full relative lg:w-auto lg:flex-1 lg:min-w-[220px]">
 											<FocusShortcutInput
 												placeholder="Filter services..."
 												value={searchQuery}
@@ -1514,7 +1514,7 @@ const EnvironmentPage = (
 											<Search className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
 										</div>
 										<Select value={sortBy} onValueChange={setSortBy}>
-											<SelectTrigger className="lg:w-[280px]">
+											<SelectTrigger className="lg:w-[220px]">
 												<SelectValue placeholder="Sort by..." />
 											</SelectTrigger>
 											<SelectContent>
@@ -1595,7 +1595,7 @@ const EnvironmentPage = (
 												</Command>
 											</PopoverContent>
 										</Popover>
-										<div className="flex items-center rounded-md border p-0.5">
+										<div className="flex shrink-0 items-center rounded-md border p-0.5">
 											<Button
 												type="button"
 												variant={view === "grid" ? "secondary" : "ghost"}
