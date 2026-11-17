@@ -23,6 +23,7 @@ import {
 	getWebServerSettings,
 	IS_CLOUD,
 	loadServices,
+	moveServiceToTrash,
 	randomizeComposeFile,
 	randomizeIsolatedDeploymentComposeFile,
 	removeCompose,
@@ -256,6 +257,8 @@ export const composeRouter = createTRPCRouter({
 					message: "You are not authorized to delete this compose",
 				});
 			}
+
+			await moveServiceToTrash("compose", input.composeId, ctx.user.id);
 
 			const result = await db
 				.delete(composeTable)

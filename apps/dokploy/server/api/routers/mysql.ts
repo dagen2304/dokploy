@@ -15,6 +15,7 @@ import {
 	getServiceContainer,
 	getWebServerSettings,
 	IS_CLOUD,
+	moveServiceToTrash,
 	rebuildDatabase,
 	removeMySqlById,
 	removeService,
@@ -341,6 +342,8 @@ export const mysqlRouter = createTRPCRouter({
 					message: "You are not authorized to delete this MySQL",
 				});
 			}
+
+			await moveServiceToTrash("mysql", input.mysqlId, ctx.user.id);
 
 			await audit(ctx, {
 				action: "delete",

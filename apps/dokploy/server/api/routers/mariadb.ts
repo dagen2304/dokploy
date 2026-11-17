@@ -15,6 +15,7 @@ import {
 	getServiceContainer,
 	getWebServerSettings,
 	IS_CLOUD,
+	moveServiceToTrash,
 	rebuildDatabase,
 	removeMariadbById,
 	removeService,
@@ -291,6 +292,8 @@ export const mariadbRouter = createTRPCRouter({
 					message: "You are not authorized to delete this Mariadb",
 				});
 			}
+
+			await moveServiceToTrash("mariadb", input.mariadbId, ctx.user.id);
 
 			await audit(ctx, {
 				action: "delete",

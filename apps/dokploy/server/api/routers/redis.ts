@@ -13,6 +13,7 @@ import {
 	getServiceContainer,
 	getWebServerSettings,
 	IS_CLOUD,
+	moveServiceToTrash,
 	rebuildDatabase,
 	removeRedisById,
 	removeService,
@@ -333,6 +334,8 @@ export const redisRouter = createTRPCRouter({
 					message: "You are not authorized to delete this Redis",
 				});
 			}
+
+			await moveServiceToTrash("redis", input.redisId, ctx.user.id);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "service",

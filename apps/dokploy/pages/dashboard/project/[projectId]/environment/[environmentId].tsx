@@ -39,6 +39,7 @@ import { AddTemplate } from "@/components/dashboard/project/add-template";
 import { AdvancedEnvironmentSelector } from "@/components/dashboard/project/advanced-environment-selector";
 import { DuplicateProject } from "@/components/dashboard/project/duplicate-project";
 import { EnvironmentCanvas } from "@/components/dashboard/project/environment-canvas";
+import { EnvironmentTrash } from "@/components/dashboard/project/environment-trash";
 import { EnvironmentVariables } from "@/components/dashboard/project/environment-variables";
 import { ProjectEnvironment } from "@/components/dashboard/projects/project-environment";
 import {
@@ -1089,6 +1090,11 @@ const EnvironmentPage = (
 									<ProjectEnvironment projectId={projectId}>
 										<Button variant="outline">Project Environment</Button>
 									</ProjectEnvironment>
+									<EnvironmentTrash
+										projectId={projectId}
+										environmentId={environmentId}
+										onRestored={() => refetch()}
+									/>
 									{permissions?.service.create && (
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>

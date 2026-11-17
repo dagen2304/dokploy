@@ -16,6 +16,7 @@ import {
 	getServiceContainer,
 	getWebServerSettings,
 	IS_CLOUD,
+	moveServiceToTrash,
 	rebuildDatabase,
 	removePostgresById,
 	removeService,
@@ -317,6 +318,8 @@ export const postgresRouter = createTRPCRouter({
 					message: "You are not authorized to delete this Postgres",
 				});
 			}
+
+			await moveServiceToTrash("postgres", input.postgresId, ctx.user.id);
 
 			await audit(ctx, {
 				action: "delete",

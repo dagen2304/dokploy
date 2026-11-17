@@ -17,6 +17,7 @@ import {
 	getWebServerSettings,
 	IS_CLOUD,
 	mechanizeDockerContainer,
+	moveServiceToTrash,
 	readConfig,
 	readRemoteConfig,
 	removeDeployments,
@@ -362,6 +363,8 @@ export const applicationRouter = createTRPCRouter({
 					message: "You are not authorized to delete this application",
 				});
 			}
+
+			await moveServiceToTrash("application", input.applicationId, ctx.user.id);
 
 			const previewDeploymentsList =
 				await findPreviewDeploymentsByApplicationId(input.applicationId);
