@@ -1,6 +1,7 @@
 import copy from "copy-to-clipboard";
-import { CopyIcon, ServerIcon } from "lucide-react";
+import { CopyIcon, Download, ServerIcon } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -8,12 +9,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { BRAND_UPDATES_URL } from "@/lib/brand";
 import { api } from "@/utils/api";
 import { ShowDokployActions } from "./servers/actions/show-dokploy-actions";
 import { ShowStorageActions } from "./servers/actions/show-storage-actions";
 import { ShowTraefikActions } from "./servers/actions/show-traefik-actions";
 import { ToggleDockerCleanup } from "./servers/actions/toggle-docker-cleanup";
-import { UpdateServer } from "./web-server/update-server";
 
 export const WebServer = () => {
 	const { data: webServerSettings } =
@@ -47,7 +48,12 @@ export const WebServer = () => {
 							<ShowTraefikActions />
 							<ShowStorageActions />
 
-							<UpdateServer />
+							<Button variant="secondary" size="sm" asChild>
+								<a href={BRAND_UPDATES_URL} target="_blank" rel="noreferrer">
+									<Download className="h-4 w-4 shrink-0" />
+									Deploy a new version
+								</a>
+							</Button>
 						</div>
 
 						<div className="flex items-center flex-wrap justify-between gap-4">

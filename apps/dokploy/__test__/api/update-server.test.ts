@@ -89,61 +89,41 @@ const caller = settingsRouter.createCaller({
 	user: { id: "user-1", email: "user@example.com", role: "owner" },
 } as Parameters<typeof settingsRouter.createCaller>[0]);
 
+// KTC fork: the panel runs its own image, so in-panel updates (which pull
+// the official dokploy/dokploy image) are disabled whatever the setup.
 describe("settings.updateServer", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-	});
-
-	it("fails with a clear error when no dokploy docker resource exists", async () => {
-		mockGetDockerResourceType.mockResolvedValue("unknown");
-
-		await expect(caller.updateServer()).rejects.toMatchObject({
-			code: "BAD_REQUEST",
-			message: expect.stringContaining("not running as a Docker service"),
+		mockGetUpdateData.mockResolvedValue({
+			latestVersion: "v9.9.9",
+			updateAvailable: true,
 		});
-
-		expect(mockSpawnAsync).not.toHaveBeenCalled();
 	});
 
-	it("fails for a standalone container where docker service update cannot run", async () => {
-		mockGetDockerResourceType.mockResolvedValue("standalone");
+	it.each(["service", "standalone", "unknown"])(
+		"refuses to update and never swaps the image (%s)",
+		async (resourceType) => {
+			mockGetDockerResourceType.mockResolvedValue(resourceType);
+
+			await expect(caller.updateServer()).rejects.toMatchObject({
+				code: "BAD_REQUEST",
+				message: expect.stringContaining("In-panel updates are disabled"),
+			});
+
+			expect(mockSpawnAsync).not.toHaveBeenCalled();
+		},
+	);
+});
+
+describe("settings.getUpdateData", () => {
+	it("never reports an official update as available", async () => {
 		mockGetUpdateData.mockResolvedValue({
 			latestVersion: "v9.9.9",
 			updateAvailable: true,
 		});
 
-		await expect(caller.updateServer()).rejects.toMatchObject({
-			code: "BAD_REQUEST",
-			message: expect.stringContaining("not running as a Docker service"),
+		await expect(caller.getUpdateData()).resolves.toMatchObject({
+			updateAvailable: false,
 		});
-
-		expect(mockSpawnAsync).not.toHaveBeenCalled();
-	});
-
-	it("does not report a fake success when the update command cannot run", async () => {
-		mockGetDockerResourceType.mockResolvedValue("unknown");
-		mockGetUpdateData.mockResolvedValue({
-			latestVersion: "v9.9.9",
-			updateAvailable: true,
-		});
-
-		await expect(caller.updateServer()).rejects.toBeDefined();
-		expect(mockGetUpdateData).not.toHaveBeenCalled();
-	});
-
-	it("triggers the docker service update when the service exists", async () => {
-		mockGetDockerResourceType.mockResolvedValue("service");
-		mockGetUpdateData.mockResolvedValue({
-			latestVersion: "v9.9.9",
-			updateAvailable: true,
-		});
-		mockSpawnAsync.mockResolvedValue({ stdout: "", stderr: null });
-
-		await expect(caller.updateServer()).resolves.toBe(true);
-
-		expect(mockSpawnAsync).toHaveBeenCalledWith(
-			"docker",
-			expect.arrayContaining(["service", "update", "dokploy/dokploy:v9.9.9"]),
-		);
 	});
 });

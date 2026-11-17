@@ -68,6 +68,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { BRAND_NAME } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 import { api } from "@/utils/api";
 
@@ -567,7 +568,9 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																	<SelectTrigger>
 																		<SelectValue
 																			placeholder={
-																				!isCloud ? "Dokploy" : "Select a Server"
+																				!isCloud
+																					? BRAND_NAME
+																					: "Select a Server"
 																			}
 																		/>
 																	</SelectTrigger>
@@ -576,7 +579,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																			{!isCloud && (
 																				<SelectItem value="dokploy">
 																					<span className="flex items-center gap-2 justify-between w-full">
-																						<span>Dokploy</span>
+																						<span>{BRAND_NAME}</span>
 																						<span className="text-muted-foreground text-xs self-center">
 																							Default
 																						</span>

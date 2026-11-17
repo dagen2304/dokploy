@@ -46,6 +46,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { useSortPreference } from "@/hooks/use-sort-preference";
+import { BRAND_NAME } from "@/lib/brand";
 import { api } from "@/utils/api";
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
@@ -342,7 +343,7 @@ export const ShowOverviewServices = () => {
 									<SelectItem value="all">All servers</SelectItem>
 									{hasServicesWithoutServer && (
 										<SelectItem value="dokploy-server">
-											Dokploy server
+											{BRAND_NAME} server
 										</SelectItem>
 									)}
 									{availableServers.map((s) => (
@@ -428,7 +429,7 @@ export const ShowOverviewServices = () => {
 												<div className="flex items-center gap-1.5 text-muted-foreground">
 													<ServerIcon className="size-3.5" />
 													<span className="truncate">
-														{service.serverName ?? "Dokploy server"}
+														{service.serverName ?? `${BRAND_NAME} server`}
 													</span>
 												</div>
 											</TableCell>

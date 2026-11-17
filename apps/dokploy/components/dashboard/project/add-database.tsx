@@ -50,6 +50,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { BRAND_NAME } from "@/lib/brand";
 import { slugify } from "@/lib/slug";
 import { api } from "@/utils/api";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/utils/schema";
@@ -480,7 +481,7 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 													<SelectTrigger>
 														<SelectValue
 															placeholder={
-																showLocalOption ? "Dokploy" : "Select a Server"
+																showLocalOption ? BRAND_NAME : "Select a Server"
 															}
 														/>
 													</SelectTrigger>
@@ -489,7 +490,7 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 															{showLocalOption && (
 																<SelectItem value="dokploy">
 																	<span className="flex items-center gap-2 justify-between w-full">
-																		<span>Dokploy</span>
+																		<span>{BRAND_NAME}</span>
 																		<span className="text-muted-foreground text-xs self-center">
 																			Default
 																		</span>
