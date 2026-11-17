@@ -1,5 +1,6 @@
 import {
 	buildDatabaseVariables,
+	buildReferenceEdges,
 	buildServiceVariables,
 	hasServiceReferences,
 	referenceNameFor,
@@ -127,5 +128,29 @@ describe("buildDatabaseVariables", () => {
 describe("slugifyServiceName", () => {
 	it("normalises accents, spaces and case", () => {
 		expect(slugifyServiceName("  Base de Données ")).toBe("base-de-donnees");
+	});
+});
+
+describe("buildReferenceEdges", () => {
+	it("draws one edge per referenced service with the variable names", () => {
+		const worker: ServiceRefTarget = {
+			id: "w1",
+			type: "application",
+			name: "Worker",
+			appName: "shop-worker-111",
+			variables: {},
+			env: [
+				"DATABASE_URL=${{postgres.DATABASE_URL}}",
+				"PGHOST=${{postgres.PGHOST}}",
+				"API=${{my-api.PUBLIC_URL}}",
+				"REGION=${{project.REGION}}",
+				"BROKEN=${{nope.X}}",
+				"SELF=${{worker.PORT}}",
+			].join("\n"),
+		};
+		expect(buildReferenceEdges([postgres, api, worker])).toEqual([
+			{ source: "w1", target: "pg1", keys: ["DATABASE_URL", "PGHOST"] },
+			{ source: "w1", target: "app1", keys: ["PUBLIC_URL"] },
+		]);
 	});
 });

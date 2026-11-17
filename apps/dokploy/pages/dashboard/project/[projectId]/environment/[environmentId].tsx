@@ -9,6 +9,7 @@ import {
 	CircuitBoard,
 	FolderInput,
 	GlobeIcon,
+	LayoutGrid,
 	Loader2,
 	Play,
 	PlusIcon,
@@ -17,6 +18,7 @@ import {
 	ServerIcon,
 	SquareTerminal,
 	Trash2,
+	Workflow,
 	X,
 } from "lucide-react";
 import type {
@@ -36,6 +38,7 @@ import { AddImport } from "@/components/dashboard/project/add-import";
 import { AddTemplate } from "@/components/dashboard/project/add-template";
 import { AdvancedEnvironmentSelector } from "@/components/dashboard/project/advanced-environment-selector";
 import { DuplicateProject } from "@/components/dashboard/project/duplicate-project";
+import { EnvironmentCanvas } from "@/components/dashboard/project/environment-canvas";
 import { EnvironmentVariables } from "@/components/dashboard/project/environment-variables";
 import { ProjectEnvironment } from "@/components/dashboard/projects/project-environment";
 import {
@@ -417,6 +420,20 @@ const EnvironmentPage = (
 	const applications = extractServicesFromEnvironment(currentEnvironment);
 
 	const [searchQuery, setSearchQuery] = useState("");
+	const [view, setView] = useState<"grid" | "canvas">("grid");
+	useEffect(() => {
+		try {
+			if (localStorage.getItem("ktc:environment-view") === "canvas") {
+				setView("canvas");
+			}
+		} catch {}
+	}, []);
+	const changeView = (next: "grid" | "canvas") => {
+		setView(next);
+		try {
+			localStorage.setItem("ktc:environment-view", next);
+		} catch {}
+	};
 	const serviceTypes = [
 		{ value: "application", label: "Application", icon: GlobeIcon },
 		{ value: "postgres", label: "PostgreSQL", icon: PostgresqlIcon },
@@ -1578,6 +1595,28 @@ const EnvironmentPage = (
 												</Command>
 											</PopoverContent>
 										</Popover>
+										<div className="flex items-center rounded-md border p-0.5">
+											<Button
+												type="button"
+												variant={view === "grid" ? "secondary" : "ghost"}
+												size="sm"
+												className="h-8 gap-1.5"
+												onClick={() => changeView("grid")}
+											>
+												<LayoutGrid className="size-4" />
+												Grid
+											</Button>
+											<Button
+												type="button"
+												variant={view === "canvas" ? "secondary" : "ghost"}
+												size="sm"
+												className="h-8 gap-1.5"
+												onClick={() => changeView("canvas")}
+											>
+												<Workflow className="size-4" />
+												Canvas
+											</Button>
+										</div>
 										{(availableServers.length > 0 ||
 											hasServicesWithoutServer) && (
 											<Select
@@ -1632,6 +1671,12 @@ const EnvironmentPage = (
 												Try adjusting your search or filters
 											</span>
 										</div>
+									) : view === "canvas" ? (
+										<EnvironmentCanvas
+											projectId={projectId}
+											environmentId={environmentId}
+											services={filteredServices}
+										/>
 									) : (
 										<div className="flex w-full flex-col gap-4">
 											<div className="gap-5 pb-10 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
