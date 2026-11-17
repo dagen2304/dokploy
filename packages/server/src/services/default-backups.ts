@@ -29,7 +29,7 @@ export type DefaultBackupConfig = {
 };
 
 export const getDefaultBackupConfig = (
-	env: NodeJS.ProcessEnv = process.env,
+	env: Record<string, string | undefined> = process.env,
 ): DefaultBackupConfig | null => {
 	const destinationName = env.DEFAULT_BACKUP_DESTINATION?.trim();
 	if (!destinationName) return null;
