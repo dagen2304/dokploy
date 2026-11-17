@@ -1,4 +1,5 @@
 import {
+	buildReferenceEdges,
 	createEnvironment,
 	deleteEnvironment,
 	duplicateEnvironment,
@@ -8,6 +9,7 @@ import {
 	IS_CLOUD,
 	loadServiceRefTargets,
 	referenceNameFor,
+	type ServiceRefTarget,
 	updateEnvironmentById,
 } from "@dokploy/server";
 import { db } from "@dokploy/server/db";
@@ -34,6 +36,45 @@ import {
 	environments,
 	projects,
 } from "@/server/db/schema";
+
+const loadVisibleServiceRefTargets = async (
+	environmentId: string,
+	ctx: {
+		user: { id: string; role: string };
+		session: { activeOrganizationId: string };
+	},
+): Promise<{
+	targets: ServiceRefTarget[];
+	canSee: (target: ServiceRefTarget) => boolean;
+}> => {
+	const environment = await findEnvironmentById(environmentId);
+	if (environment.project.organizationId !== ctx.session.activeOrganizationId) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "You are not allowed to access this environment",
+		});
+	}
+
+	const targets = await loadServiceRefTargets(environmentId);
+	if (ctx.user.role === "owner" || ctx.user.role === "admin") {
+		return { targets, canSee: () => true };
+	}
+
+	const { accessedEnvironments, accessedServices } = await findMemberByUserId(
+		ctx.user.id,
+		ctx.session.activeOrganizationId,
+	);
+	if (!accessedEnvironments.includes(environment.environmentId)) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "You are not allowed to access this environment",
+		});
+	}
+	return {
+		targets,
+		canSee: (target) => accessedServices.includes(target.id),
+	};
+};
 
 export const environmentRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -119,45 +160,34 @@ export const environmentRouter = createTRPCRouter({
 	serviceReferences: protectedProcedure
 		.input(apiFindOneEnvironment)
 		.query(async ({ input, ctx }) => {
-			const environment = await findEnvironmentById(input.environmentId);
-			if (
-				environment.project.organizationId !== ctx.session.activeOrganizationId
-			) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "You are not allowed to access this environment",
-				});
-			}
-
-			const targets = await loadServiceRefTargets(input.environmentId);
-			// Computed on the full list so a suggested name is never ambiguous at deploy.
-			let references = targets.map((target) => ({
-				id: target.id,
+			const { targets, canSee } = await loadVisibleServiceRefTargets(
+				input.environmentId,
+				ctx,
+			);
+			// Names only: values (passwords, URLs) never leave the server here.
+			// Suggested names are computed on the full list so they are never
+			// ambiguous at deploy.
+			return targets.filter(canSee).map((target) => ({
 				reference: referenceNameFor(target, targets),
 				name: target.name,
 				type: target.type,
 				keys: Object.keys(target.variables).sort(),
 			}));
+		}),
 
-			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
-				const { accessedEnvironments, accessedServices } =
-					await findMemberByUserId(
-						ctx.user.id,
-						ctx.session.activeOrganizationId,
-					);
-				if (!accessedEnvironments.includes(environment.environmentId)) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message: "You are not allowed to access this environment",
-					});
-				}
-				references = references.filter((reference) =>
-					accessedServices.includes(reference.id),
-				);
-			}
-
-			// Names only: values (passwords, URLs) never leave the server here.
-			return references.map(({ id: _id, ...reference }) => reference);
+	serviceGraph: protectedProcedure
+		.input(apiFindOneEnvironment)
+		.query(async ({ input, ctx }) => {
+			const { targets, canSee } = await loadVisibleServiceRefTargets(
+				input.environmentId,
+				ctx,
+			);
+			const visible = new Set(targets.filter(canSee).map((t) => t.id));
+			return {
+				edges: buildReferenceEdges(targets).filter(
+					(edge) => visible.has(edge.source) && visible.has(edge.target),
+				),
+			};
 		}),
 
 	byProjectId: protectedProcedure

@@ -23,6 +23,50 @@ export type ServiceRefTarget = {
 	name: string;
 	appName: string;
 	variables: Record<string, string>;
+	/** Raw variables of the service itself, used to draw reference edges. */
+	env?: string | null;
+};
+
+export type ServiceRefEdge = {
+	source: string;
+	target: string;
+	keys: string[];
+};
+
+/**
+ * One edge per (referencing service → referenced service), carrying the
+ * referenced variable names. Unknown or ambiguous references are skipped:
+ * they are reported at deploy time, the graph only shows what resolves.
+ */
+export const buildReferenceEdges = (
+	targets: ServiceRefTarget[],
+): ServiceRefEdge[] => {
+	const edges = new Map<string, ServiceRefEdge>();
+	for (const source of targets) {
+		for (const match of (source.env ?? "").matchAll(SERVICE_REF_REGEX)) {
+			const ref = match[1] as string;
+			const key = match[2] as string;
+			if (isReservedNamespace(ref)) continue;
+
+			let target: ServiceRefTarget | undefined;
+			try {
+				target = findServiceRefTarget(ref, targets);
+			} catch {
+				continue;
+			}
+			if (!target || target.id === source.id) continue;
+
+			const id = `${source.id}->${target.id}`;
+			const edge = edges.get(id) ?? {
+				source: source.id,
+				target: target.id,
+				keys: [],
+			};
+			if (!edge.keys.includes(key)) edge.keys.push(key);
+			edges.set(id, edge);
+		}
+	}
+	return [...edges.values()];
 };
 
 export const slugifyServiceName = (name: string) =>

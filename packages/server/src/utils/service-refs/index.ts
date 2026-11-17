@@ -68,6 +68,7 @@ export const loadServiceRefTargets = async (
 			name: app.name,
 			appName: app.appName,
 			variables: buildServiceVariables("application", app, resolveOwnEnv),
+			env: app.env,
 		})),
 		...environment.compose.map((compose) => ({
 			id: compose.composeId,
@@ -75,6 +76,7 @@ export const loadServiceRefTargets = async (
 			name: compose.name,
 			appName: compose.appName,
 			variables: buildServiceVariables("compose", compose, resolveOwnEnv),
+			env: compose.env,
 		})),
 		...environment.postgres.map((row) => ({
 			id: row.postgresId,
@@ -82,6 +84,7 @@ export const loadServiceRefTargets = async (
 			name: row.name,
 			appName: row.appName,
 			variables: buildDatabaseVariables("postgres", row),
+			env: row.env,
 		})),
 		...environment.mysql.map((row) => ({
 			id: row.mysqlId,
@@ -89,6 +92,7 @@ export const loadServiceRefTargets = async (
 			name: row.name,
 			appName: row.appName,
 			variables: buildDatabaseVariables("mysql", row),
+			env: row.env,
 		})),
 		...environment.mariadb.map((row) => ({
 			id: row.mariadbId,
@@ -96,6 +100,7 @@ export const loadServiceRefTargets = async (
 			name: row.name,
 			appName: row.appName,
 			variables: buildDatabaseVariables("mariadb", row),
+			env: row.env,
 		})),
 		...environment.mongo.map((row) => ({
 			id: row.mongoId,
@@ -103,6 +108,7 @@ export const loadServiceRefTargets = async (
 			name: row.name,
 			appName: row.appName,
 			variables: buildDatabaseVariables("mongo", row),
+			env: row.env,
 		})),
 		...environment.redis.map((row) => ({
 			id: row.redisId,
@@ -110,6 +116,7 @@ export const loadServiceRefTargets = async (
 			name: row.name,
 			appName: row.appName,
 			variables: buildDatabaseVariables("redis", row),
+			env: row.env,
 		})),
 		...environment.libsql.map((row) => ({
 			id: row.libsqlId,
@@ -117,6 +124,7 @@ export const loadServiceRefTargets = async (
 			name: row.name,
 			appName: row.appName,
 			variables: buildDatabaseVariables("libsql", row),
+			env: row.env,
 		})),
 	];
 };
