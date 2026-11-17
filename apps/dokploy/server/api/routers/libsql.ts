@@ -10,6 +10,7 @@ import {
 	getContainerLogs,
 	getWebServerSettings,
 	IS_CLOUD,
+	moveServiceToTrash,
 	rebuildDatabase,
 	removeLibsqlById,
 	removeService,
@@ -321,6 +322,8 @@ export const libsqlRouter = createTRPCRouter({
 					message: "You are not authorized to delete this Libsql",
 				});
 			}
+
+			await moveServiceToTrash("libsql", input.libsqlId, ctx.user.id);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "service",

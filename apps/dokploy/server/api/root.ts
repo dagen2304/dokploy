@@ -58,6 +58,7 @@ import { swarmRouter } from "./routers/swarm";
 import { tagRouter } from "./routers/tag";
 import { telemetryProviderRouter } from "./routers/telemetry-provider";
 import { transferRouter } from "./routers/transfer";
+import { trashRouter } from "./routers/trash";
 import { userRouter } from "./routers/user";
 import { vaultProviderRouter } from "./routers/vault-provider";
 import { volumeBackupsRouter } from "./routers/volume-backups";
@@ -118,6 +119,7 @@ export const appRouter = createTRPCRouter({
 	scim: scimRouter,
 	forwardAuth: forwardAuthRouter,
 	whitelabeling: whitelabelingRouter,
+	trash: trashRouter,
 	customRole: customRoleRouter,
 	auditLog: auditLogRouter,
 	schedule: scheduleRouter,

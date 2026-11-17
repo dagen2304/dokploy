@@ -14,6 +14,7 @@ import {
 	getServiceContainer,
 	getWebServerSettings,
 	IS_CLOUD,
+	moveServiceToTrash,
 	rebuildDatabase,
 	removeMongoById,
 	removeService,
@@ -343,6 +344,8 @@ export const mongoRouter = createTRPCRouter({
 					message: "You are not authorized to delete this mongo",
 				});
 			}
+
+			await moveServiceToTrash("mongo", input.mongoId, ctx.user.id);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "service",
