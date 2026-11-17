@@ -7,6 +7,7 @@ import NextDocument, {
 	Main,
 	NextScript,
 } from "next/document";
+import { BRAND_NAME } from "@/lib/brand";
 
 interface WhitelabelingDocumentProps {
 	appName: string | null;
@@ -27,7 +28,7 @@ export default function Document({
 	customCss,
 	baseUrl,
 }: WhitelabelingDocumentProps) {
-	const title = appName || "Dokploy";
+	const title = appName || BRAND_NAME;
 	const description =
 		appDescription || "The Open Source alternative to Netlify, Vercel, Heroku.";
 

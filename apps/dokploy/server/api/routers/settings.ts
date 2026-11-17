@@ -66,6 +66,7 @@ import { eq, sql } from "drizzle-orm";
 import { scheduledJobs, scheduleJob } from "node-schedule";
 import { parse, stringify } from "yaml";
 import { z } from "zod";
+import { BRAND_UPDATES_URL } from "@/lib/brand";
 import { audit } from "@/server/api/utils/audit";
 import {
 	apiAssignDomain,
@@ -93,6 +94,8 @@ import {
 	publicProcedure,
 	withPermission,
 } from "../trpc";
+
+const KTC_FORK = true;
 
 /**
  * Confines a caller-supplied Traefik file path to the Traefik configuration
@@ -618,16 +621,20 @@ export const settingsRouter = createTRPCRouter({
 			});
 			return true;
 		}),
+	// KTC fork: updates ship through GitHub Actions (BRAND_UPDATES_URL), never
+	// by pulling the official dokploy/dokploy image over this panel's build.
 	getUpdateData: protectedProcedure.mutation(async () => {
-		if (IS_CLOUD) {
-			return DEFAULT_UPDATE_DATA;
-		}
-
-		return await getUpdateData(packageInfo.version);
+		return DEFAULT_UPDATE_DATA;
 	}),
 	updateServer: adminProcedure.mutation(async ({ ctx }) => {
 		if (IS_CLOUD) {
 			return true;
+		}
+		if (KTC_FORK) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: `In-panel updates are disabled on this build. Deploy a new version from ${BRAND_UPDATES_URL}`,
+			});
 		}
 
 		const resourceType = await getDockerResourceType("dokploy");

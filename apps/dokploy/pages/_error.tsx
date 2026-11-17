@@ -2,6 +2,7 @@ import type { NextPageContext } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { buttonVariants } from "@/components/ui/button";
+import { BRAND_NAME } from "@/lib/brand";
 import { useWhitelabelingPublic } from "@/utils/hooks/use-whitelabeling";
 
 interface Props {
@@ -11,7 +12,7 @@ interface Props {
 export default function ErrorPage({ statusCode }: Props) {
 	const displayStatusCode = statusCode || 500;
 	const { config: whitelabeling } = useWhitelabelingPublic();
-	const appName = whitelabeling?.appName || "Dokploy";
+	const appName = whitelabeling?.appName || BRAND_NAME;
 	const logoUrl = whitelabeling?.logoUrl || undefined;
 	const logoLightUrl = whitelabeling?.logoLightUrl || undefined;
 	const errorTitle = whitelabeling?.errorPageTitle;

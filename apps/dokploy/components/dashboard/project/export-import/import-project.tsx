@@ -21,6 +21,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { BRAND_NAME } from "@/lib/brand";
 import { api, type RouterOutputs } from "@/utils/api";
 import {
 	AutofillDecoy,
@@ -137,7 +138,9 @@ export const ImportProject = () => {
 								</SelectTrigger>
 								<SelectContent>
 									{!isCloud && (
-										<SelectItem value={LOCAL_SERVER}>Dokploy server</SelectItem>
+										<SelectItem value={LOCAL_SERVER}>
+											{BRAND_NAME} server
+										</SelectItem>
 									)}
 									{servers?.map((server) => (
 										<SelectItem key={server.serverId} value={server.serverId}>

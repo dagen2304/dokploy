@@ -39,6 +39,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { BRAND_NAME } from "@/lib/brand";
 import { api } from "@/utils/api";
 
 const certificateDataHolder =
@@ -251,7 +252,9 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 										>
 											<SelectTrigger>
 												<SelectValue
-													placeholder={!isCloud ? "Dokploy" : "Select a Server"}
+													placeholder={
+														!isCloud ? BRAND_NAME : "Select a Server"
+													}
 												/>
 											</SelectTrigger>
 											<SelectContent>
@@ -259,7 +262,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 													{!isCloud && (
 														<SelectItem value="dokploy">
 															<span className="flex items-center gap-2 justify-between w-full">
-																<span>Dokploy</span>
+																<span>{BRAND_NAME}</span>
 																<span className="text-muted-foreground text-xs self-center">
 																	Default
 																</span>

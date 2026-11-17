@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { BRAND_NAME } from "@/lib/brand";
 import { api } from "@/utils/api";
 
 type DeploymentStatus = "idle" | "running" | "done" | "error";
@@ -19,7 +20,7 @@ function getServiceInfo(d: any) {
 	const app = d.application;
 	const comp = d.compose;
 	const serverName: string =
-		d.server?.name ?? app?.server?.name ?? comp?.server?.name ?? "Dokploy";
+		d.server?.name ?? app?.server?.name ?? comp?.server?.name ?? BRAND_NAME;
 	if (app?.environment?.project && app.environment) {
 		return {
 			name: app.name as string,

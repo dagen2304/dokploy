@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { BRAND_NAME } from "@/lib/brand";
 import { appRouter } from "@/server/api/root";
 import { generateServerSideHelper } from "@/utils/create-server-helpers";
 import { useWhitelabelingPublic } from "@/utils/hooks/use-whitelabeling";
@@ -100,7 +101,7 @@ export default function Home() {
 						}
 					/>
 					<span className="font-medium text-sm">
-						{whitelabeling?.appName || "Dokploy"}
+						{whitelabeling?.appName || BRAND_NAME}
 					</span>
 				</Link>
 				<CardTitle className="text-2xl font-bold">Reset Password</CardTitle>

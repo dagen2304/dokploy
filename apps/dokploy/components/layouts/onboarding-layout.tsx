@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type React from "react";
+import { BRAND_NAME } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 import { useWhitelabelingPublic } from "@/utils/hooks/use-whitelabeling";
 import { GithubIcon } from "../icons/data-tools-icons";
@@ -13,7 +14,7 @@ interface Props {
 }
 export const OnboardingLayout = ({ children, leftPanel }: Props) => {
 	const { config: whitelabeling } = useWhitelabelingPublic();
-	const appName = whitelabeling?.appName || "Dokploy";
+	const appName = whitelabeling?.appName || BRAND_NAME;
 	const appDescription =
 		whitelabeling?.appDescription ||
 		"\u201CThe Open Source alternative to Netlify, Vercel, Heroku.\u201D";
