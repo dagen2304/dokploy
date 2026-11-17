@@ -15,6 +15,7 @@ import { ShowDokployActions } from "./servers/actions/show-dokploy-actions";
 import { ShowStorageActions } from "./servers/actions/show-storage-actions";
 import { ShowTraefikActions } from "./servers/actions/show-traefik-actions";
 import { ToggleDockerCleanup } from "./servers/actions/toggle-docker-cleanup";
+import { DefaultBackups } from "./web-server/default-backups";
 
 export const WebServer = () => {
 	const { data: webServerSettings } =
@@ -55,6 +56,8 @@ export const WebServer = () => {
 								</a>
 							</Button>
 						</div>
+
+						<DefaultBackups />
 
 						<div className="flex items-center flex-wrap justify-between gap-4">
 							<span className="text-sm text-muted-foreground flex items-center gap-1.5">

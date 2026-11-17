@@ -3,6 +3,7 @@ import {
 	createMount,
 	createPostgres,
 	deployPostgres,
+	ensureDefaultBackup,
 	execAsync,
 	execAsyncRemote,
 	findBackupsByDbId,
@@ -115,6 +116,7 @@ export const postgresRouter = createTRPCRouter({
 					resourceId: newPostgres.postgresId,
 					resourceName: newPostgres.appName,
 				});
+				await ensureDefaultBackup("postgres", newPostgres.postgresId);
 				return newPostgres;
 			} catch (error) {
 				if (error instanceof TRPCError) {

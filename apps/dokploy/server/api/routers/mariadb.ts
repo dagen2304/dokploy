@@ -3,6 +3,7 @@ import {
 	createMariadb,
 	createMount,
 	deployMariadb,
+	ensureDefaultBackup,
 	execAsync,
 	execAsyncRemote,
 	findBackupsByDbId,
@@ -112,6 +113,7 @@ export const mariadbRouter = createTRPCRouter({
 					resourceId: newMariadb.mariadbId,
 					resourceName: newMariadb.appName,
 				});
+				await ensureDefaultBackup("mariadb", newMariadb.mariadbId);
 				return newMariadb;
 			} catch (error) {
 				if (error instanceof TRPCError) {

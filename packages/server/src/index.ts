@@ -11,6 +11,7 @@ export * from "./services/account-deletion";
 export * from "./services/admin";
 export * from "./services/application";
 export * from "./services/backup";
+export * from "./services/default-backups";
 export * from "./services/bitbucket";
 export * from "./services/certificate";
 export * from "./services/cluster";
