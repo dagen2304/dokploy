@@ -61,6 +61,12 @@ export const useEnvCompletionSource = ({
 	environmentId,
 }: Options = {}) => {
 	const { data: allProviders } = api.vaultProvider.all.useQuery();
+	const { data: serviceReferences } =
+		api.environment.serviceReferences.useQuery(
+			{ environmentId: environmentId ?? "" },
+			// Service references are only resolved in a service's own variables.
+			{ enabled: !!environmentId && includeShared },
+		);
 	const utils = api.useUtils();
 	const providers = projectId
 		? allProviders?.filter((provider) =>
@@ -138,8 +144,36 @@ export const useEnvCompletionSource = ({
 				}
 			}
 
+			const serviceVariable = /^([A-Za-z0-9][A-Za-z0-9_-]*)\.([^}\n]*)$/.exec(
+				inner,
+			);
+			if (serviceVariable) {
+				const service = serviceReferences?.find(
+					(reference) => reference.reference === serviceVariable[1],
+				);
+				if (!service) return null;
+				return {
+					from: innerFrom + `${service.reference}.`.length,
+					options: service.keys.map((key) => ({
+						label: key,
+						type: "variable",
+						apply: applyAndClose,
+					})),
+					validFor: /^[A-Za-z0-9_]*$/,
+				};
+			}
+
 			if (!inner.includes(".")) {
 				const options: Completion[] = [];
+				for (const service of serviceReferences ?? []) {
+					options.push({
+						label: `${service.reference}.`,
+						detail: service.type,
+						info: `Variables of the "${service.name}" service`,
+						type: "namespace",
+						apply: applyAndContinue,
+					});
+				}
 				if (includeShared) {
 					options.push(
 						{
@@ -182,6 +216,7 @@ export const useEnvCompletionSource = ({
 		},
 		[
 			providers,
+			serviceReferences,
 			projectEnv,
 			environmentEnv,
 			includeShared,

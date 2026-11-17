@@ -6,6 +6,8 @@ import {
 	findEnvironmentById,
 	findEnvironmentsByProjectId,
 	IS_CLOUD,
+	loadServiceRefTargets,
+	referenceNameFor,
 	updateEnvironmentById,
 } from "@dokploy/server";
 import { db } from "@dokploy/server/db";
@@ -112,6 +114,50 @@ export const environmentRouter = createTRPCRouter({
 			}
 
 			return environment;
+		}),
+
+	serviceReferences: protectedProcedure
+		.input(apiFindOneEnvironment)
+		.query(async ({ input, ctx }) => {
+			const environment = await findEnvironmentById(input.environmentId);
+			if (
+				environment.project.organizationId !== ctx.session.activeOrganizationId
+			) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "You are not allowed to access this environment",
+				});
+			}
+
+			const targets = await loadServiceRefTargets(input.environmentId);
+			// Computed on the full list so a suggested name is never ambiguous at deploy.
+			let references = targets.map((target) => ({
+				id: target.id,
+				reference: referenceNameFor(target, targets),
+				name: target.name,
+				type: target.type,
+				keys: Object.keys(target.variables).sort(),
+			}));
+
+			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+				const { accessedEnvironments, accessedServices } =
+					await findMemberByUserId(
+						ctx.user.id,
+						ctx.session.activeOrganizationId,
+					);
+				if (!accessedEnvironments.includes(environment.environmentId)) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "You are not allowed to access this environment",
+					});
+				}
+				references = references.filter((reference) =>
+					accessedServices.includes(reference.id),
+				);
+			}
+
+			// Names only: values (passwords, URLs) never leave the server here.
+			return references.map(({ id: _id, ...reference }) => reference);
 		}),
 
 	byProjectId: protectedProcedure
