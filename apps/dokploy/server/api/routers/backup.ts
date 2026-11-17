@@ -1,4 +1,5 @@
 import {
+	backfillDefaultBackups,
 	createBackup,
 	findBackupById,
 	findBackupsByDbId,
@@ -16,6 +17,7 @@ import {
 	findPostgresById,
 	findServerById,
 	getBackupDownloadUrl,
+	getDefaultBackupStatus,
 	IS_CLOUD,
 	keepLatestNBackups,
 	listBackupFilesByBackupId,
@@ -58,6 +60,7 @@ import { TRPCError } from "@trpc/server";
 import { quote } from "shell-quote";
 import { z } from "zod";
 import {
+	adminProcedure,
 	createTRPCRouter,
 	protectedProcedure,
 	withPermission,
@@ -96,6 +99,29 @@ const assertWebServerBackupAccess = async (
 };
 
 export const backupRouter = createTRPCRouter({
+	defaultBackupStatus: adminProcedure.query(async ({ ctx }) =>
+		getDefaultBackupStatus(ctx.session.activeOrganizationId),
+	),
+	backfillDefaultBackups: adminProcedure.mutation(async ({ ctx }) => {
+		try {
+			const result = await backfillDefaultBackups(
+				ctx.session.activeOrganizationId,
+			);
+			for (const created of result.created) {
+				await audit(ctx, {
+					action: "create",
+					resourceType: "backup",
+					resourceName: created.name,
+				});
+			}
+			return result;
+		} catch (error) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: error instanceof Error ? error.message : "Backfill failed",
+			});
+		}
+	}),
 	create: protectedProcedure
 		.input(apiCreateBackup)
 		.mutation(async ({ input, ctx }) => {

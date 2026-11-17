@@ -3,6 +3,7 @@ import {
 	createMount,
 	createMysql,
 	deployMySql,
+	ensureDefaultBackup,
 	execAsync,
 	execAsyncRemote,
 	findBackupsByDbId,
@@ -112,6 +113,7 @@ export const mysqlRouter = createTRPCRouter({
 					resourceId: newMysql.mysqlId,
 					resourceName: newMysql.appName,
 				});
+				await ensureDefaultBackup("mysql", newMysql.mysqlId);
 				return newMysql;
 			} catch (error) {
 				if (error instanceof TRPCError) {
