@@ -7,6 +7,7 @@ import { bitbucketRouter } from "./routers/bitbucket";
 import { certificateRouter } from "./routers/certificate";
 import { clusterRouter } from "./routers/cluster";
 import { composeRouter } from "./routers/compose";
+import { deployDiagnosisRouter } from "./routers/deploy-diagnosis";
 import { deploymentRouter } from "./routers/deployment";
 import { destinationRouter } from "./routers/destination";
 import { dnsProviderRouter } from "./routers/dns-provider";
@@ -120,6 +121,7 @@ export const appRouter = createTRPCRouter({
 	forwardAuth: forwardAuthRouter,
 	whitelabeling: whitelabelingRouter,
 	trash: trashRouter,
+	deployDiagnosis: deployDiagnosisRouter,
 	customRole: customRoleRouter,
 	auditLog: auditLogRouter,
 	schedule: scheduleRouter,

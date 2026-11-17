@@ -29,6 +29,7 @@ import { api, type RouterOutputs } from "@/utils/api";
 import { ShowRollbackSettings } from "../rollbacks/show-rollback-settings";
 import { CancelQueues } from "./cancel-queues";
 import { ClearDeployments } from "./clear-deployments";
+import { DiagnoseDeployment } from "./diagnose-deployment";
 import { KillBuild } from "./kill-build";
 import { RefreshToken } from "./refresh-token";
 import { ShowDeployment } from "./show-deployment";
@@ -396,6 +397,12 @@ export const ShowDeployments = ({
 													</Button>
 												</DialogAction>
 											)}
+											{deployment.status === "error" &&
+												(type === "application" || type === "compose") && (
+													<DiagnoseDeployment
+														deploymentId={deployment.deploymentId}
+													/>
+												)}
 											<Button
 												onClick={() => {
 													setActiveLog(deployment);

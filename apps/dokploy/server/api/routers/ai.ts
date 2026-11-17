@@ -1,3 +1,4 @@
+import { redactLog } from "@dokploy/server";
 import { IS_CLOUD } from "@dokploy/server/constants";
 import {
 	apiCreateAi,
@@ -340,7 +341,7 @@ export const aiRouter = createTRPCRouter({
 Be concise and practical. Focus on the most important issues. If the logs look healthy, say so briefly.
 
 Logs:
-${input.logs}`,
+${redactLog(input.logs, [])}`,
 				});
 
 				return { analysis: result.text };
