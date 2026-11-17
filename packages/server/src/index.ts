@@ -13,6 +13,7 @@ export * from "./services/application";
 export * from "./services/backup";
 export * from "./services/default-backups";
 export * from "./services/trash";
+export * from "./services/deploy-diagnosis";
 export * from "./services/bitbucket";
 export * from "./services/certificate";
 export * from "./services/cluster";
