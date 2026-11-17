@@ -30,11 +30,32 @@ export interface GenerateJWTOptions {
 	payload?: Record<string, unknown> | undefined;
 }
 
+export const getAppsWildcardDomain = (): string | undefined => {
+	const value = process.env.APPS_WILDCARD_DOMAIN?.trim()
+		.replace(/^\*\./, "")
+		.replace(/\.$/, "")
+		.toLowerCase();
+	return value || undefined;
+};
+
+export const isAppsWildcardHost = (host: string | undefined | null) => {
+	const appsWildcardDomain = getAppsWildcardDomain();
+	if (!appsWildcardDomain || !host) return false;
+	return host.trim().toLowerCase().endsWith(`.${appsWildcardDomain}`);
+};
+
 export const generateRandomDomain = ({
 	serverIp,
 	projectName,
 }: Schema): string => {
 	const hash = randomBytes(3).toString("hex");
+
+	const appsWildcardDomain = getAppsWildcardDomain();
+	if (appsWildcardDomain) {
+		const label = `${projectName.toLowerCase().slice(0, 56).replace(/-+$/, "")}-${hash}`;
+		return `${label}.${appsWildcardDomain}`;
+	}
+
 	const effectiveIp = serverIp || "127.0.0.1";
 	const slugIp = effectiveIp.replaceAll(".", "-").replaceAll(":", "-");
 

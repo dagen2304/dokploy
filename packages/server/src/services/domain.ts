@@ -4,7 +4,10 @@ import os from "node:os";
 import { promisify } from "node:util";
 import { db } from "@dokploy/server/db";
 import { getWebServerSettings } from "@dokploy/server/services/web-server-settings";
-import { generateRandomDomain } from "@dokploy/server/templates";
+import {
+	generateRandomDomain,
+	isAppsWildcardHost,
+} from "@dokploy/server/templates";
 import { execAsyncRemote } from "@dokploy/server/utils/process/execAsync";
 import { manageDomain } from "@dokploy/server/utils/traefik/domain";
 import { getPublicIpWithFallback } from "@dokploy/server/wss/utils";
@@ -19,6 +22,12 @@ import { findServerById } from "./server";
 export type Domain = typeof domains.$inferSelect;
 
 export const createDomain = async (input: z.infer<typeof apiCreateDomain>) => {
+	// Hosts under APPS_WILDCARD_DOMAIN are publicly resolvable, so Let's Encrypt
+	// can always issue for them: never leave them on plain HTTP.
+	if (isAppsWildcardHost(input.host) && input.certificateType !== "custom") {
+		input = { ...input, https: true, certificateType: "letsencrypt" };
+	}
+
 	const result = await db.transaction(async (tx) => {
 		const domain = await tx
 			.insert(domains)
