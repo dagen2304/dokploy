@@ -12,6 +12,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
+import { getLang, setLang } from "@/lib/i18n/runtime";
 import { getFallbackAvatarInitials } from "@/lib/utils";
 import { api } from "@/utils/api";
 import { ModeToggle } from "../ui/modeToggle";
@@ -145,6 +146,13 @@ export const UserNav = () => {
 					</DropdownMenuItem>
 				)}
 				<DropdownMenuSeparator />
+				<DropdownMenuItem
+					className="cursor-pointer"
+					data-no-translate
+					onClick={() => setLang(getLang() === "fr" ? "en" : "fr")}
+				>
+					{getLang() === "fr" ? "English" : "Français"}
+				</DropdownMenuItem>
 				<DropdownMenuItem
 					className="cursor-pointer"
 					onClick={async () => {
