@@ -76,7 +76,7 @@ const readLogTail = async (logPath: string, serverId?: string | null) => {
 
 export const buildDiagnosisPrompt = (context: string, log: string) => `
 You are a senior DevOps engineer helping someone who deploys apps on a
-self-hosted PaaS (Dokploy fork named KTC: Docker Swarm, Traefik, builds with
+self-hosted PaaS (Dokploy fork named Olympe: Docker Swarm, Traefik, builds with
 Nixpacks, Railpack, Heroku buildpacks or a Dockerfile).
 
 A deployment failed. Using the service configuration and the end of the
