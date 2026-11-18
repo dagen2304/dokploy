@@ -12,6 +12,9 @@ import { db } from "@dokploy/server/db";
 import { hasValidLicense } from "@dokploy/server/index";
 import type { statements } from "@dokploy/server/lib/access-control";
 import { validateRequest } from "@dokploy/server/lib/auth";
+import { evaluateTenantRequest } from "@dokploy/server/services/olympe/guard";
+import { runWithOrganization } from "@dokploy/server/services/olympe/request-context";
+import { isOperatorOrganization } from "@dokploy/server/services/olympe/tenancy";
 import {
 	checkPermission,
 	resolvePermissions,
@@ -151,7 +154,24 @@ export const createTRPCRouter = t.router;
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure;
+// Olympe: client organizations only reach the procedures their plan and the
+// isolation rules allow; the operator organization is never filtered.
+const olympeBase = t.procedure.use(
+	async ({ ctx, path, type, getRawInput, next }) => {
+		const organizationId = ctx.session?.activeOrganizationId;
+		if (!organizationId) return next();
+		await evaluateTenantRequest({
+			organizationId,
+			path,
+			type,
+			input: await getRawInput().catch(() => undefined),
+			user: ctx.user as { email?: string; emailVerified?: boolean } | null,
+		});
+		return runWithOrganization(organizationId, () => next());
+	},
+);
+
+export const publicProcedure = olympeBase;
 
 /**
  * Protected (authenticated) procedure
@@ -161,7 +181,7 @@ export const publicProcedure = t.procedure;
  *
  * @see https://trpc.io/docs/procedures
  */
-export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+export const protectedProcedure = olympeBase.use(({ ctx, next }) => {
 	if (!ctx.session || !ctx.user) {
 		throw new TRPCError({ code: "UNAUTHORIZED" });
 	}
@@ -175,7 +195,7 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 	});
 });
 
-export const cliProcedure = t.procedure.use(({ ctx, next }) => {
+export const cliProcedure = olympeBase.use(({ ctx, next }) => {
 	if (
 		!ctx.session ||
 		!ctx.user ||
@@ -193,7 +213,7 @@ export const cliProcedure = t.procedure.use(({ ctx, next }) => {
 	});
 });
 
-export const adminProcedure = t.procedure.use(({ ctx, next }) => {
+export const adminProcedure = olympeBase.use(({ ctx, next }) => {
 	if (
 		!ctx.session ||
 		!ctx.user ||
@@ -209,6 +229,19 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
 			// session: { ...ctx.session, user: ctx.user },
 		},
 	});
+});
+
+// Olympe: owner/admin of the operator organization (KTC). Without
+// OLYMPE_OPERATOR_ORG_ID every owner/admin counts as operator, as before.
+export const operatorProcedure = adminProcedure.use(({ ctx, next }) => {
+	if (!isOperatorOrganization(ctx.session.activeOrganizationId)) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message:
+				"Cette fonction est réservée à l'administrateur de la plateforme Olympe.",
+		});
+	}
+	return next();
 });
 
 /**
@@ -216,7 +249,7 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
  * Does NOT call the license server on every request; full validation (haveValidLicenseKey)
  * is used in the UI gate and when activating/validating keys.
  */
-export const enterpriseProcedure = t.procedure.use(async ({ ctx, next }) => {
+export const enterpriseProcedure = olympeBase.use(async ({ ctx, next }) => {
 	if (
 		!ctx.session ||
 		!ctx.user ||

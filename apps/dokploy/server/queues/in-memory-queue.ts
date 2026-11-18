@@ -63,7 +63,11 @@ interface InternalJob {
 	state: JobState;
 	partition: string;
 	group: string;
+	tenant: TenantSlot | null;
 }
+
+/** Olympe: builds of one client organization share its plan's build slots. */
+export type TenantSlot = { key: string; limit: number };
 
 interface Partition {
 	waiting: InternalJob[];
@@ -79,6 +83,7 @@ export interface InMemoryQueueOptions {
 	 * picked up without restarting the queue. Must return a value >= 1.
 	 */
 	resolveConcurrency: (partition: string) => Promise<number> | number;
+	resolveTenantSlot?: (data: DeploymentJob) => Promise<TenantSlot | null>;
 	/** Monotonic clock; injectable for tests. Defaults to Date.now. */
 	now?: () => number;
 }
@@ -89,10 +94,12 @@ export class InMemoryQueue {
 	private running = false;
 	private seq = 0;
 	private readonly resolveConcurrency: InMemoryQueueOptions["resolveConcurrency"];
+	private readonly resolveTenantSlot: InMemoryQueueOptions["resolveTenantSlot"];
 	private readonly now: () => number;
 
 	constructor(options: InMemoryQueueOptions) {
 		this.resolveConcurrency = options.resolveConcurrency;
+		this.resolveTenantSlot = options.resolveTenantSlot;
 		this.now = options.now ?? (() => Date.now());
 	}
 
@@ -134,6 +141,9 @@ export class InMemoryQueue {
 			state: "waiting",
 			partition: partitionKey,
 			group: getGroup(data),
+			tenant: this.resolveTenantSlot
+				? await this.resolveTenantSlot(data).catch(() => null)
+				: null,
 		};
 		this.getPartitionState(partitionKey).waiting.push(job);
 		this.schedule();
@@ -227,7 +237,11 @@ export class InMemoryQueue {
 		while (partition.active.length < concurrency) {
 			// First waiting job whose group is not already running.
 			const index = partition.waiting.findIndex(
-				(job) => !partition.activeGroups.has(job.group),
+				(job) =>
+					!partition.activeGroups.has(job.group) &&
+					(!job.tenant ||
+						partition.active.filter((a) => a.tenant?.key === job.tenant?.key)
+							.length < job.tenant.limit),
 			);
 			if (index === -1) break;
 

@@ -8,6 +8,10 @@ import type { Domain } from "@dokploy/server/services/domain";
 import { eq, inArray } from "drizzle-orm";
 import { quote } from "shell-quote";
 import { parse, stringify } from "yaml";
+import {
+	checkTenantCompose,
+	finalizeTenantCompose,
+} from "../../services/olympe/enforce";
 import { execAsyncRemote } from "../process/execAsync";
 import { cloneBitbucketRepository } from "../providers/bitbucket";
 import { cloneGitRepository } from "../providers/git";
@@ -295,6 +299,8 @@ export const addDomainToCompose = async (
 
 	result = (await applyComposeFilePatch(compose)) ?? result;
 
+	const tenant = await checkTenantCompose(compose, result);
+
 	if (compose.isolatedDeployment) {
 		const randomized = randomizeDeployableSpecificationFile(
 			result,
@@ -415,6 +421,10 @@ export const addDomainToCompose = async (
 
 	if (!compose.isolatedDeployment) {
 		declareUsedNetworksInRoot(result, injectedNetworkNames);
+	}
+
+	if (tenant) {
+		await finalizeTenantCompose(compose, result, tenant);
 	}
 
 	return result;

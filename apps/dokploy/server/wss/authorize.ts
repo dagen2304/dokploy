@@ -1,4 +1,5 @@
 import { getAccessibleServerIds } from "@dokploy/server";
+import { isClientOrganization } from "@dokploy/server/services/olympe/tenancy";
 import {
 	checkServiceAccess,
 	findMemberByUserId,
@@ -43,6 +44,9 @@ export const canAccessDockerOverWss = async (
 			return false;
 		}
 	}
+
+	// Olympe clients only see containers through their own services.
+	if (isClientOrganization(session.activeOrganizationId)) return false;
 
 	// Generic Docker overview (no service context): mirror the docker tRPC router
 	// — require the docker permission and access to the target server.
@@ -97,6 +101,9 @@ export const canAccessTerminalOverWss = async (
 			server: ["terminal"],
 		});
 	}
+
+	// The local terminal is a root shell on the machine every client shares.
+	if (isClientOrganization(session.activeOrganizationId)) return false;
 
 	try {
 		const member = await findMemberByUserId(

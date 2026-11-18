@@ -6,6 +6,7 @@ import { db } from "@dokploy/server/db";
 import { getWebServerSettings } from "@dokploy/server/services/web-server-settings";
 import {
 	generateRandomDomain,
+	getAppsWildcardDomain,
 	isAppsWildcardHost,
 } from "@dokploy/server/templates";
 import { execAsyncRemote } from "@dokploy/server/utils/process/execAsync";
@@ -75,7 +76,7 @@ export const generateTraefikMeDomain = async (
 	_userId: string,
 	serverId?: string,
 ) => {
-	const appsWildcardDomain = process.env.APPS_WILDCARD_DOMAIN?.trim();
+	const appsWildcardDomain = getAppsWildcardDomain();
 	if (appsWildcardDomain) {
 		return buildAppsWildcardHost(appName, appsWildcardDomain);
 	}

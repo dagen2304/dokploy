@@ -45,6 +45,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+	applyOlympeMenu,
+	OLYMPE_BILLING_ITEM,
+	OLYMPE_OPERATOR_ITEM,
+} from "@/components/olympe/menu";
 import { TruncateTooltip } from "@/components/shared/truncate-tooltip";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -105,6 +110,7 @@ import type { AppRouter } from "@/server/api/root";
 import { api } from "@/utils/api";
 import { TrialBanner } from "../dashboard/billing/trial-banner";
 import { AddOrganization } from "../dashboard/organization/handle-organization";
+import { OlympeBanner } from "../olympe/tenant-banner";
 import { DialogAction } from "../shared/dialog-action";
 import { Logo } from "../shared/logo";
 import { Button } from "../ui/button";
@@ -980,9 +986,11 @@ export default function Page({ children }: Props) {
 	const includesProjects = pathname?.includes("/dashboard/project");
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 
+	const { data: olympe } = api.olympe.me.useQuery();
+
 	const {
-		home: filteredHome,
-		settings: filteredSettings,
+		home: menuHome,
+		settings: menuSettings,
 		help,
 	} = createMenuForAuthUser({
 		auth,
@@ -990,6 +998,16 @@ export default function Page({ children }: Props) {
 		isCloud: !!isCloud,
 		whitelabeling,
 	});
+	const filteredHome = applyOlympeMenu<NavItem>(menuHome, olympe);
+	const filteredSettings = applyOlympeMenu<NavItem>(
+		menuSettings,
+		olympe,
+		olympe?.tenant
+			? [OLYMPE_BILLING_ITEM]
+			: olympe?.isOperator && auth?.role !== "member"
+				? [OLYMPE_OPERATOR_ITEM]
+				: [],
+	);
 
 	const activeItem = findActiveNavItem(
 		[...filteredHome, ...filteredSettings],
@@ -1255,6 +1273,7 @@ export default function Page({ children }: Props) {
 			</Sidebar>
 			<SidebarInset>
 				{isCloud === true && <TrialBanner />}
+				<OlympeBanner />
 				{!includesProjects && (
 					<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
 						<div className="flex items-center justify-between w-full px-4">

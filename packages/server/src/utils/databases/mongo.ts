@@ -1,6 +1,7 @@
 import type { InferResultType } from "@dokploy/server/types/with";
 import type { CreateServiceOptions } from "dockerode";
 import { resolveServiceNetworks } from "../../services/network";
+import { enforceTenantServicePolicy } from "../../services/olympe/enforce";
 import { buildDokployLabels } from "../docker/dokploy-labels";
 import {
 	calculateResources,
@@ -19,7 +20,9 @@ export type MongoNested = InferResultType<
 >;
 
 export const buildMongo = async (rawMongo: MongoNested) => {
-	const mongo = await withResolvedVaultRefs(rawMongo);
+	const mongo = await enforceTenantServicePolicy(
+		await withResolvedVaultRefs(rawMongo),
+	);
 	const {
 		appName,
 		env,

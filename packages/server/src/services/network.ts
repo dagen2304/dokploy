@@ -7,6 +7,14 @@ import type { z } from "zod";
 import { IS_CLOUD } from "../constants";
 import type { ApplicationNested } from "../utils/builders";
 import { getRemoteDocker } from "../utils/servers/remote-docker";
+import {
+	isClientOrganization,
+	isMultiTenant,
+	organizationIdOfService,
+	tenantNetworkName,
+} from "./olympe/tenancy";
+
+const RESERVED_NETWORK_PREFIXES = ["olympe-"];
 
 const RESERVED_NETWORKS = [
 	"bridge",
@@ -50,6 +58,9 @@ const parseMtu = (value: string | undefined) => {
 
 const isImportableDockerNetwork = (dockerNetwork: DockerNetworkInfo) =>
 	!RESERVED_NETWORKS.includes(dockerNetwork.Name) &&
+	!RESERVED_NETWORK_PREFIXES.some((prefix) =>
+		dockerNetwork.Name.startsWith(prefix),
+	) &&
 	!dockerNetwork.Ingress &&
 	(dockerNetwork.Driver === "bridge" || dockerNetwork.Driver === "overlay");
 
@@ -363,7 +374,15 @@ export const recreateNetwork = async (networkId: string) => {
 export const resolveServiceNetworks = async (
 	application: Partial<ApplicationNested>,
 ) => {
-	if (application.networkSwarm) {
+	const tenantOrganizationId =
+		isMultiTenant() && application.appName
+			? await organizationIdOfService(application as { appName: string })
+			: null;
+	const isTenant = isClientOrganization(tenantOrganizationId);
+
+	// Clients may not pick raw swarm networks: that is how they would reach
+	// dokploy-network or another client's network.
+	if (application.networkSwarm && !isTenant) {
 		return application.networkSwarm;
 	}
 
@@ -374,12 +393,19 @@ export const resolveServiceNetworks = async (
 					where: and(
 						inArray(network.networkId, networkIds),
 						eq(network.driver, "overlay"),
+						...(isTenant && tenantOrganizationId
+							? [eq(network.organizationId, tenantOrganizationId)]
+							: []),
 					),
 					columns: { name: true },
 				})
 			: [];
 
-	const networks = detachDokployNetwork ? [] : ["dokploy-network"];
+	const defaultNetwork =
+		isTenant && tenantOrganizationId
+			? tenantNetworkName(tenantOrganizationId)
+			: "dokploy-network";
+	const networks = detachDokployNetwork ? [] : [defaultNetwork];
 	for (const row of rows) {
 		networks.push(row.name);
 	}

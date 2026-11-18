@@ -28,6 +28,7 @@ import { mountRouter } from "./routers/mount";
 import { mysqlRouter } from "./routers/mysql";
 import { networkRouter } from "./routers/network";
 import { notificationRouter } from "./routers/notification";
+import { olympeRouter } from "./routers/olympe";
 import { organizationRouter } from "./routers/organization";
 import { overviewRouter } from "./routers/overview";
 import { patchRouter } from "./routers/patch";
@@ -122,6 +123,7 @@ export const appRouter = createTRPCRouter({
 	whitelabeling: whitelabelingRouter,
 	trash: trashRouter,
 	deployDiagnosis: deployDiagnosisRouter,
+	olympe: olympeRouter,
 	customRole: customRoleRouter,
 	auditLog: auditLogRouter,
 	schedule: scheduleRouter,

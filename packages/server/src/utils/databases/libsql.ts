@@ -1,6 +1,7 @@
 import type { InferResultType } from "@dokploy/server/types/with";
 import type { CreateServiceOptions, PortConfig } from "dockerode";
 import { resolveServiceNetworks } from "../../services/network";
+import { enforceTenantServicePolicy } from "../../services/olympe/enforce";
 import { buildDokployLabels } from "../docker/dokploy-labels";
 import {
 	calculateResources,
@@ -21,7 +22,9 @@ export type LibsqlNested = InferResultType<
 	}
 >;
 export const buildLibsql = async (rawLibsql: LibsqlNested) => {
-	const libsql = await withResolvedVaultRefs(rawLibsql);
+	const libsql = await enforceTenantServicePolicy(
+		await withResolvedVaultRefs(rawLibsql),
+	);
 	const {
 		appName,
 		env,

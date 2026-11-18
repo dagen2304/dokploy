@@ -335,3 +335,40 @@ describe("InMemoryQueue job management", () => {
 		expect(started).toEqual(["a", "b"]);
 	});
 });
+
+describe("InMemoryQueue Olympe build slots", () => {
+	it("limits the builds of one client to its plan while others keep going", async () => {
+		const tasks = new Map<string, ReturnType<typeof deferred>>();
+		const started: string[] = [];
+		const owner: Record<string, string> = {
+			a1: "acme",
+			a2: "acme",
+			b1: "beta",
+		};
+
+		const queue = new InMemoryQueue({
+			resolveConcurrency: () => 5,
+			resolveTenantSlot: async (data) => {
+				const id = (data as any).applicationId as string;
+				return { key: owner[id] ?? id, limit: 1 };
+			},
+		});
+		queue.process(async (job) => {
+			const id = (job.data as any).applicationId;
+			started.push(id);
+			const d = deferred();
+			tasks.set(id, d);
+			await d.promise;
+		});
+
+		await queue.add(appJob("a1"));
+		await queue.add(appJob("a2"));
+		await queue.add(appJob("b1"));
+		await flush();
+		expect(started).toEqual(["a1", "b1"]);
+
+		tasks.get("a1")!.release();
+		await flush();
+		expect(started).toEqual(["a1", "b1", "a2"]);
+	});
+});
