@@ -6,11 +6,12 @@ import type { AppProps } from "next/app";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import NextTopLoader from "nextjs-toploader";
-import type { ReactElement, ReactNode } from "react";
+import { type ReactElement, type ReactNode, useEffect } from "react";
 import { SearchCommand } from "@/components/dashboard/search-command";
 import { Analytics } from "@/components/shared/analytics";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { startTranslation } from "@/lib/i18n/runtime";
 import { api } from "@/utils/api";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -29,6 +30,10 @@ const MyApp = ({
 	pageProps: { ...pageProps },
 }: AppPropsWithLayout) => {
 	const getLayout = Component.getLayout ?? ((page) => page);
+
+	useEffect(() => {
+		startTranslation();
+	}, []);
 
 	return (
 		<>
