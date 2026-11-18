@@ -32,7 +32,7 @@ export const Logo = ({
 			viewBox="0 0 64 64"
 			className={className}
 			role="img"
-			aria-label="KTC"
+			aria-label="Olympe"
 		>
 			<rect
 				x="2"
@@ -42,14 +42,16 @@ export const Logo = ({
 				rx="14"
 				className="fill-primary"
 			/>
-			<path
-				className="fill-primary-foreground"
-				d="M8 20h5v9.4L20.8 20h5.9l-8.4 10.1L27 44h-6l-6-9.5L13 37v7H8zM28 20h13.5v4.6h-4.4V44h-4.7V24.6H28z"
+			<circle
+				cx="32"
+				cy="32"
+				r="18"
+				strokeWidth={5}
+				className="fill-none stroke-primary-foreground"
 			/>
 			<path
-				className="fill-none stroke-primary-foreground"
-				strokeWidth={4.6}
-				d="M55.4 25.2A6.6 9.7 0 1 0 55.4 38.8"
+				d="M19 40 L28 25 L32 31 L36 26 L45 40 Z"
+				className="fill-primary-foreground"
 			/>
 		</svg>
 	);
