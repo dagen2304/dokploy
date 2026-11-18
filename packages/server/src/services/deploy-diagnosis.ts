@@ -10,6 +10,10 @@ import { getAiSettingsByOrganizationId } from "./ai";
 import { findApplicationById } from "./application";
 import { findComposeById } from "./compose";
 import { findDeploymentById } from "./deployment";
+import { getOlympeConfig } from "./olympe/config";
+import { consumeMonthlyQuota } from "./olympe/quotas";
+import { isClientOrganization } from "./olympe/tenancy";
+import { getTenant } from "./olympe/tenants";
 
 // KTC fork: "why did this deploy fail?" — reads the end of the build log,
 // strips secrets, and asks the organization's configured AI provider.
@@ -169,9 +173,26 @@ export const diagnoseDeployment = async (
 		);
 	}
 
-	const aiSetting = (await getAiSettingsByOrganizationId(organizationId)).find(
+	const ownSetting = (await getAiSettingsByOrganizationId(organizationId)).find(
 		(setting) => setting.isEnabled,
 	);
+	// Olympe clients without their own AI key use the operator's, within the
+	// monthly allowance of their plan.
+	const { operatorOrgId } = getOlympeConfig();
+	let aiSetting = ownSetting;
+	if (!aiSetting && operatorOrgId && isClientOrganization(organizationId)) {
+		aiSetting = (await getAiSettingsByOrganizationId(operatorOrgId)).find(
+			(setting) => setting.isEnabled,
+		);
+		if (aiSetting) {
+			const tenant = await getTenant(organizationId);
+			await consumeMonthlyQuota(
+				organizationId,
+				"ai-diagnosis",
+				tenant.plan.aiDiagnosesPerMonth,
+			);
+		}
+	}
 	if (!aiSetting) {
 		throw new DiagnosisError(
 			"No AI provider is enabled. Add one in Settings > AI.",

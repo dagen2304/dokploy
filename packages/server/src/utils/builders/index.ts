@@ -6,6 +6,7 @@ import { resolveServiceNetworks } from "@dokploy/server/services/network";
 import { findRegistryByIdWithCredentials } from "@dokploy/server/services/registry";
 import type { InferResultType } from "@dokploy/server/types/with";
 import type { CreateServiceOptions } from "dockerode";
+import { enforceTenantServicePolicy } from "../../services/olympe/enforce";
 import { getRegistryTag, uploadImageRemoteCommand } from "../cluster/upload";
 import { buildDokployLabels } from "../docker/dokploy-labels";
 import {
@@ -77,6 +78,7 @@ const assertSafeBuildFields = (application: ApplicationNested) => {
 
 export const getBuildCommand = async (rawApplication: ApplicationNested) => {
 	const application = await withResolvedVaultRefs(rawApplication);
+	await enforceTenantServicePolicy(application);
 	let command = "";
 
 	if (application.sourceType !== "docker") {
@@ -118,7 +120,9 @@ export const getBuildCommand = async (rawApplication: ApplicationNested) => {
 export const mechanizeDockerContainer = async (
 	rawApplication: ApplicationNested,
 ) => {
-	const application = await withResolvedVaultRefs(rawApplication);
+	const application = await enforceTenantServicePolicy(
+		await withResolvedVaultRefs(rawApplication),
+	);
 	const {
 		appName,
 		env,

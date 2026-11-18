@@ -21,6 +21,13 @@ import {
 	getTrustedProviders,
 	getUserByToken,
 } from "../services/admin";
+import { getOlympeConfig } from "../services/olympe/config";
+import {
+	checkSelfSignup,
+	createClientSpace,
+	isSelfSignupRequest,
+	sendOlympeVerificationEmail,
+} from "../services/olympe/signup";
 import { createAuditLog } from "../services/proprietary/audit-log";
 import { resolveOrganizationDefaultRole } from "../services/proprietary/license-key";
 import {
@@ -226,6 +233,11 @@ const createBetterAuth = () =>
 						email: user.email,
 						verificationUrl: await rewriteToCanonicalOrigin(url),
 					});
+				} else if (getOlympeConfig().publicSignup) {
+					await sendOlympeVerificationEmail(
+						user,
+						await rewriteToCanonicalOrigin(url),
+					);
 				}
 			},
 		},
@@ -299,9 +311,18 @@ const createBetterAuth = () =>
 									where: eq(schema.member.role, "owner"),
 								});
 								if (isAdminPresent) {
-									throw new APIError("BAD_REQUEST", {
-										message: "Admin is already created",
-									});
+									if (!getOlympeConfig().publicSignup) {
+										throw new APIError("BAD_REQUEST", {
+											message: "Admin is already created",
+										});
+									}
+									const refusal = await checkSelfSignup(
+										_user.email,
+										context?.request?.headers,
+									);
+									if (refusal) {
+										throw new APIError("BAD_REQUEST", { message: refusal });
+									}
 								}
 							}
 						}
@@ -362,7 +383,9 @@ const createBetterAuth = () =>
 							return;
 						}
 
-						if (IS_CLOUD || !isAdminPresent) {
+						if (!IS_CLOUD && isAdminPresent && isSelfSignupRequest(context)) {
+							await createClientSpace(user, context?.request?.headers);
+						} else if (IS_CLOUD || !isAdminPresent) {
 							const createdOrganization = await db.transaction(async (tx) => {
 								const organization = await tx
 									.insert(schema.organization)

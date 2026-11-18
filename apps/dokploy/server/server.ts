@@ -15,6 +15,7 @@ import {
 	setupDirectories,
 	startTraefikAfterFailedBoot,
 } from "@dokploy/server";
+import { initOlympeJobs } from "@dokploy/server/services/olympe/jobs";
 import { config } from "dotenv";
 import next from "next";
 import packageInfo from "../package.json";
@@ -76,6 +77,7 @@ void app.prepare().then(async () => {
 			await initSchedules();
 			await initCancelDeployments();
 			await initVolumeBackupsCronJobs();
+			initOlympeJobs();
 			await sendDokployRestartNotifications();
 		}
 		await initEnterpriseBackupCronJobs();

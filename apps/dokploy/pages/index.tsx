@@ -64,6 +64,9 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 	const router = useRouter();
 	const { config: whitelabeling } = useWhitelabelingPublic();
 	const { data: showSignInWithSSO } = api.sso.showSignInWithSSO.useQuery();
+	const { data: olympeInfo } = api.olympe.publicInfo.useQuery(undefined, {
+		enabled: !IS_CLOUD,
+	});
 	const [isLoginLoading, setIsLoginLoading] = useState(false);
 	const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
 	const [isTwoFactorLoading, setIsTwoFactorLoading] = useState(false);
@@ -496,10 +499,10 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 
 				<div className="flex flex-row justify-between flex-wrap">
 					<div className="mt-4 text-center text-sm flex flex-row justify-center gap-2">
-						{IS_CLOUD && (
+						{(IS_CLOUD || olympeInfo?.publicSignup) && (
 							<Link
 								className="hover:underline text-muted-foreground"
-								href="/register"
+								href={IS_CLOUD ? "/register" : "/signup"}
 							>
 								Create an account
 							</Link>

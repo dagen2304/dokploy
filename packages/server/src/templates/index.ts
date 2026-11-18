@@ -4,6 +4,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Domain } from "@dokploy/server/services/domain";
 import { TRPCError } from "@trpc/server";
+import { getOlympeConfig } from "../services/olympe/config";
+import { currentOrganizationId } from "../services/olympe/request-context";
 import { fetchTemplateFiles } from "./github";
 
 export interface Schema {
@@ -30,18 +32,33 @@ export interface GenerateJWTOptions {
 	payload?: Record<string, unknown> | undefined;
 }
 
+const normalizeZone = (value?: string) =>
+	value?.trim().replace(/^\*\./, "").replace(/\.$/, "").toLowerCase() ||
+	undefined;
+
+// Clients of a multi-tenant Olympe get their generated domains under
+// OLYMPE_TENANT_APPS_DOMAIN; the operator keeps APPS_WILDCARD_DOMAIN.
 export const getAppsWildcardDomain = (): string | undefined => {
-	const value = process.env.APPS_WILDCARD_DOMAIN?.trim()
-		.replace(/^\*\./, "")
-		.replace(/\.$/, "")
-		.toLowerCase();
-	return value || undefined;
+	const operatorZone = normalizeZone(process.env.APPS_WILDCARD_DOMAIN);
+	const organizationId = currentOrganizationId();
+	const config = getOlympeConfig();
+	if (
+		organizationId &&
+		config.multiTenant &&
+		organizationId !== config.operatorOrgId
+	) {
+		return config.tenantAppsDomain ?? operatorZone;
+	}
+	return operatorZone;
 };
 
 export const isAppsWildcardHost = (host: string | undefined | null) => {
-	const appsWildcardDomain = getAppsWildcardDomain();
-	if (!appsWildcardDomain || !host) return false;
-	return host.trim().toLowerCase().endsWith(`.${appsWildcardDomain}`);
+	if (!host) return false;
+	const normalized = host.trim().toLowerCase();
+	return [
+		normalizeZone(process.env.APPS_WILDCARD_DOMAIN),
+		getOlympeConfig().tenantAppsDomain ?? undefined,
+	].some((zone) => zone && normalized.endsWith(`.${zone}`));
 };
 
 export const generateRandomDomain = ({

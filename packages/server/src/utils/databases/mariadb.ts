@@ -1,6 +1,7 @@
 import type { InferResultType } from "@dokploy/server/types/with";
 import type { CreateServiceOptions } from "dockerode";
 import { resolveServiceNetworks } from "../../services/network";
+import { enforceTenantServicePolicy } from "../../services/olympe/enforce";
 import { buildDokployLabels } from "../docker/dokploy-labels";
 import {
 	calculateResources,
@@ -18,7 +19,9 @@ export type MariadbNested = InferResultType<
 	{ mounts: true; environment: { with: { project: true } } }
 >;
 export const buildMariadb = async (rawMariadb: MariadbNested) => {
-	const mariadb = await withResolvedVaultRefs(rawMariadb);
+	const mariadb = await enforceTenantServicePolicy(
+		await withResolvedVaultRefs(rawMariadb),
+	);
 	const {
 		appName,
 		env,

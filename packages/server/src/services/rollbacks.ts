@@ -23,6 +23,7 @@ import { findDeploymentById } from "./deployment";
 import type { Environment } from "./environment";
 import type { Mount } from "./mount";
 import { resolveServiceNetworks } from "./network";
+import { enforceTenantServicePolicy } from "./olympe/enforce";
 import type { Port } from "./port";
 import type { Project } from "./project";
 import {
@@ -199,7 +200,9 @@ const rollbackApplication = async (
 		throw new Error("Full context is required for rollback");
 	}
 
-	const resolvedContext = await withResolvedVaultRefs(fullContext);
+	const resolvedContext = await enforceTenantServicePolicy(
+		await withResolvedVaultRefs(fullContext),
+	);
 
 	const rollbackRegistry = resolvedContext.rollbackRegistry ?? undefined;
 

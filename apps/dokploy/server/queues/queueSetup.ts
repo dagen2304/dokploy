@@ -1,4 +1,5 @@
 import { IS_CLOUD } from "@dokploy/server";
+import { tenantBuildSlot } from "@dokploy/server/services/olympe/quotas";
 import {
 	execAsync,
 	execAsyncRemote,
@@ -43,6 +44,11 @@ const createNoopQueue = (): DeploymentQueue => ({
 const createInMemoryQueue = (): DeploymentQueue => {
 	const queue = new InMemoryQueue({
 		resolveConcurrency: resolveBuildsConcurrency,
+		resolveTenantSlot: (data) =>
+			tenantBuildSlot({
+				applicationId: (data as { applicationId?: string }).applicationId,
+				composeId: (data as { composeId?: string }).composeId,
+			}),
 	});
 	queue.process(processDeploymentJob);
 

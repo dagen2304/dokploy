@@ -1,6 +1,7 @@
 import type { InferResultType } from "@dokploy/server/types/with";
 import type { CreateServiceOptions } from "dockerode";
 import { resolveServiceNetworks } from "../../services/network";
+import { enforceTenantServicePolicy } from "../../services/olympe/enforce";
 import { buildDokployLabels } from "../docker/dokploy-labels";
 import {
 	calculateResources,
@@ -18,7 +19,9 @@ export type RedisNested = InferResultType<
 	{ mounts: true; environment: { with: { project: true } } }
 >;
 export const buildRedis = async (rawRedis: RedisNested) => {
-	const redis = await withResolvedVaultRefs(rawRedis);
+	const redis = await enforceTenantServicePolicy(
+		await withResolvedVaultRefs(rawRedis),
+	);
 	const {
 		appName,
 		env,
