@@ -134,7 +134,25 @@ export const BillingPage = () => {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="flex flex-col gap-5">
-					{options?.simulated && (
+					{options && !options.paymentsEnabled && (
+						<div className="rounded-md border border-blue-500/40 bg-blue-500/10 px-3 py-2 text-sm">
+							Le paiement en ligne arrive bientôt. En attendant, contactez-nous
+							{options.contactEmail ? (
+								<>
+									{" "}
+									à{" "}
+									<a
+										className="underline"
+										href={`mailto:${options.contactEmail}`}
+									>
+										{options.contactEmail}
+									</a>
+								</>
+							) : null}{" "}
+							pour passer à un forfait payant.
+						</div>
+					)}
+					{options?.simulated && options.paymentsEnabled && (
 						<div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm">
 							Mode test : les paiements sont simulés, aucun argent n'est
 							prélevé.
@@ -226,7 +244,12 @@ export const BillingPage = () => {
 					<div className="flex flex-wrap items-center gap-3">
 						<Button
 							onClick={pay}
-							disabled={!canPay || !selectedPlan || checkout.isPending}
+							disabled={
+								!canPay ||
+								!selectedPlan ||
+								checkout.isPending ||
+								!options?.paymentsEnabled
+							}
 						>
 							{checkout.isPending
 								? "Préparation…"

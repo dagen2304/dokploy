@@ -75,11 +75,18 @@ export const getOlympeConfig = (env: Env = process.env) => {
 			.sort((a, b) => b - a),
 		annualFreeMonths: int(env.OLYMPE_ANNUAL_FREE_MONTHS, 2),
 		paymentProvider: env.OLYMPE_PAYMENT_PROVIDER?.trim() || "simulated",
+		// With the simulated provider, anyone could grant themselves a paid plan:
+		// once sign-up is public it stays off unless explicitly allowed.
+		paymentsEnabled:
+			(env.OLYMPE_PAYMENT_PROVIDER?.trim() || "simulated") !== "simulated" ||
+			!(Boolean(operatorOrgId) && flag(env.OLYMPE_PUBLIC_SIGNUP)) ||
+			flag(env.OLYMPE_ALLOW_SIMULATED_PAYMENTS),
 		signupsPerIpPerDay: int(env.OLYMPE_SIGNUPS_PER_IP_PER_DAY, 3),
 		blockedEmailDomains: list(env.OLYMPE_BLOCKED_EMAIL_DOMAINS),
 		turnstileSiteKey: env.TURNSTILE_SITE_KEY?.trim() || null,
 		turnstileSecretKey: env.TURNSTILE_SECRET_KEY?.trim() || null,
 		abuseEmail: env.OLYMPE_ABUSE_EMAIL?.trim() || null,
+		contactEmail: env.OLYMPE_CONTACT_EMAIL?.trim() || null,
 		termsUrl: env.OLYMPE_TERMS_URL?.trim() || "/conditions",
 		privacyUrl: env.OLYMPE_PRIVACY_URL?.trim() || "/confidentialite",
 		suspendedPageUrl: env.OLYMPE_SUSPENDED_URL?.trim() || null,

@@ -7,6 +7,7 @@ import {
 import {
 	ownerAppName,
 	parseDockerSize,
+	selectOrphanVolumes,
 } from "@dokploy/server/services/olympe/jobs";
 import {
 	checkBudget,
@@ -144,5 +145,21 @@ describe("disk measurement", () => {
 		expect(ownerAppName("shop-ab12-db-data", names)).toBe("shop-ab12-db");
 		expect(ownerAppName("shop-ab12_uploads", names)).toBe("shop-ab12");
 		expect(ownerAppName("shop-ab123-data", names)).toBeNull();
+	});
+});
+
+describe("orphan client volumes", () => {
+	it("keeps volumes of live services and of services still in the trash", () => {
+		const volumes = [
+			"shop-ab12-data",
+			"shop-ab12-db-data",
+			"blog-x1_uploads",
+			"dokploy",
+			"",
+		];
+		expect(
+			selectOrphanVolumes(volumes, ["shop-ab12", "blog-x1"], ["shop-ab12-db"]),
+		).toEqual(["shop-ab12-data", "blog-x1_uploads"]);
+		expect(selectOrphanVolumes(volumes, [], ["shop-ab12"])).toEqual([]);
 	});
 });

@@ -218,6 +218,29 @@ describe("getOlympeConfig", () => {
 		expect(config.allowPublishedPorts).toBe(true);
 	});
 
+	it("locks simulated payments once sign-up is public", () => {
+		const base = { OLYMPE_OPERATOR_ORG_ID: "op" };
+		expect(getOlympeConfig(base).paymentsEnabled).toBe(true);
+		expect(
+			getOlympeConfig({ ...base, OLYMPE_PUBLIC_SIGNUP: "true" })
+				.paymentsEnabled,
+		).toBe(false);
+		expect(
+			getOlympeConfig({
+				...base,
+				OLYMPE_PUBLIC_SIGNUP: "true",
+				OLYMPE_ALLOW_SIMULATED_PAYMENTS: "true",
+			}).paymentsEnabled,
+		).toBe(true);
+		expect(
+			getOlympeConfig({
+				...base,
+				OLYMPE_PUBLIC_SIGNUP: "true",
+				OLYMPE_PAYMENT_PROVIDER: "cinetpay",
+			}).paymentsEnabled,
+		).toBe(true);
+	});
+
 	it("turns e-mail features on with SMTP only", () => {
 		expect(getOlympeConfig({}).emailConfigured).toBe(false);
 		const config = getOlympeConfig({ SMTP_SERVER: "smtp.resend.com" });
