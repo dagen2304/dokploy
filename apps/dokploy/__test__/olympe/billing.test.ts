@@ -100,16 +100,23 @@ describe("computeNewPeriodEnd", () => {
 });
 
 describe("decideCycleAction", () => {
-	const config = { reminderDays: [7, 3, 1], graceDays: 3 };
+	const config = {
+		reminderDays: [7, 3, 1],
+		graceDays: 3,
+		deleteAfterDays: 30,
+		deletionWarningDays: 7,
+	};
 	const end = new Date("2026-12-01T00:00:00Z");
 	const at = (days: number) => new Date(end.getTime() + days * DAY);
 	const tenant = (
 		status: "trial" | "active" | "past_due" | "suspended",
 		lastReminderKey: string | null = null,
+		suspendedAt: Date | null = null,
 	) => ({
 		status,
 		currentPeriodEnd: end,
 		lastReminderKey,
+		suspendedAt,
 	});
 
 	it("waits while the end is far", () => {
@@ -143,6 +150,28 @@ describe("decideCycleAction", () => {
 		expect(decideCycleAction(tenant("suspended"), at(40), config)).toEqual({
 			type: "none",
 		});
+	});
+
+	it("warns once, 7 days before a suspended space can be deleted", () => {
+		const suspendedAt = at(3);
+		expect(
+			decideCycleAction(tenant("suspended", null, suspendedAt), at(25), config),
+		).toEqual({ type: "none" });
+		const action = decideCycleAction(
+			tenant("suspended", null, suspendedAt),
+			at(26.5),
+			config,
+		);
+		expect(action).toMatchObject({ type: "warn_deletion" });
+		if (action.type !== "warn_deletion") return;
+		expect(action.deletableAt.toISOString()).toBe(at(33).toISOString());
+		expect(
+			decideCycleAction(
+				tenant("suspended", action.key, suspendedAt),
+				at(28),
+				config,
+			),
+		).toEqual({ type: "none" });
 	});
 });
 

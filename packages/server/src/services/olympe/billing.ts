@@ -320,18 +320,32 @@ export type CycleAction =
 	| { type: "remind"; days: number; key: string }
 	| { type: "past_due" }
 	| { type: "suspend" }
+	| { type: "warn_deletion"; key: string; deletableAt: Date }
 	| { type: "none" };
 
 // Pure decision for one tenant at `now`; runBillingCycle applies it.
 export const decideCycleAction = (
 	tenant: Pick<
 		TenantWithPlan,
-		"status" | "currentPeriodEnd" | "lastReminderKey"
+		"status" | "currentPeriodEnd" | "lastReminderKey" | "suspendedAt"
 	>,
 	now: Date,
-	config: { reminderDays: number[]; graceDays: number },
+	config: {
+		reminderDays: number[];
+		graceDays: number;
+		deleteAfterDays: number;
+		deletionWarningDays: number;
+	},
 ): CycleAction => {
-	if (tenant.status === "suspended") return { type: "none" };
+	if (tenant.status === "suspended") {
+		if (!tenant.suspendedAt) return { type: "none" };
+		const deletableAt = addDays(tenant.suspendedAt, config.deleteAfterDays);
+		const warnFrom = addDays(deletableAt, -config.deletionWarningDays);
+		const key = `delete:${tenant.suspendedAt.toISOString()}`;
+		return now.getTime() >= warnFrom.getTime() && tenant.lastReminderKey !== key
+			? { type: "warn_deletion", key, deletableAt }
+			: { type: "none" };
+	}
 	const end = tenant.currentPeriodEnd.getTime();
 	if (
 		now.getTime() >=
@@ -382,6 +396,17 @@ export const runBillingCycle = async (now = new Date()) => {
 					"échéance dépassée",
 					`<p>Votre forfait <b>${tenant.plan.name}</b> est arrivé à échéance le ${formatDate(tenant.currentPeriodEnd)}.</p>
 <p>Vos applications restent en ligne encore <b>${config.graceDays} jours</b>. Sans paiement, elles seront ensuite mises en pause ; vos données seront conservées.</p>`,
+				);
+			} else if (action.type === "warn_deletion") {
+				await updateTenant(tenant.organizationId, {
+					lastReminderKey: action.key,
+				});
+				await notifyOwners(
+					tenant.organizationId,
+					"suppression prochaine de votre espace",
+					`<p>Votre espace est suspendu depuis le ${formatDate(tenant.suspendedAt ?? now)} faute de paiement.</p>
+<p>Sans renouvellement, il pourra être <b>supprimé définitivement à partir du ${formatDate(action.deletableAt)}</b>, avec toutes ses applications, bases de données et volumes.</p>
+<p>Pour l'éviter, renouvelez votre forfait depuis la page Facturation, ou récupérez vos données avant cette date.</p>`,
 				);
 			} else if (action.type === "suspend") {
 				await suspendOrganization(tenant.organizationId);
