@@ -54,7 +54,7 @@ export const ProviderScreen = ({
 			<div className="flex flex-col gap-6">
 				<BackLink onClick={onBack} />
 				<ScreenHeading eyebrow="Get a server" title="Pick a provider.">
-					Any VPS works. These four work well with Dokploy, or use your own.
+					Any VPS works. These four work well with Olympe, or use your own.
 					Create a server, then come back here to connect it.
 				</ScreenHeading>
 				<div className="flex flex-wrap gap-2">
@@ -91,7 +91,7 @@ export const ProviderScreen = ({
 								<span className="font-medium">{item.name}</span>
 								<span className="text-sm text-muted-foreground">
 									{item.offer
-										? `${item.offer} through Dokploy`
+										? `${item.offer} through Olympe`
 										: "Low-cost VPS plans"}
 								</span>
 							</span>

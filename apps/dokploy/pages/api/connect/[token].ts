@@ -31,7 +31,7 @@ export default async function handler(
 					.status(200)
 					.send(
 						buildConnectErrorScript(
-							"This command was already used. Generate a new one in Dokploy.",
+							"This command was already used. Generate a new one in Olympe.",
 						),
 					);
 				return;
@@ -42,8 +42,8 @@ export default async function handler(
 					.send(
 						buildConnectErrorScript(
 							resolved.status === "expired"
-								? "This command expired. Generate a new one in Dokploy."
-								: "This command is not valid. Generate a new one in Dokploy.",
+								? "This command expired. Generate a new one in Olympe."
+								: "This command is not valid. Generate a new one in Olympe.",
 						),
 					);
 				return;
@@ -64,7 +64,7 @@ export default async function handler(
 				.status(200)
 				.send(
 					buildConnectErrorScript(
-						"Dokploy could not prepare this command. Try again in a moment.",
+						"Olympe could not prepare this command. Try again in a moment.",
 					),
 				);
 		}
@@ -81,7 +81,7 @@ export default async function handler(
 			res.status(result.status).send(result.message);
 		} catch (error) {
 			console.error("Error registering connected server:", error);
-			res.status(500).send("Dokploy could not register this server.");
+			res.status(500).send("Olympe could not register this server.");
 		}
 		return;
 	}

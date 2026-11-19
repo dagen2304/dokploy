@@ -21,10 +21,10 @@ import { DialogAction } from "@/components/shared/dialog-action";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BRAND_NAME } from "@/lib/brand";
 import { appRouter } from "@/server/api/root";
 import { api } from "@/utils/api";
 import { useWhitelabeling } from "@/utils/hooks/use-whitelabeling";
-import { BRAND_NAME } from "@/lib/brand";
 
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
 	<div className="flex flex-col gap-1">
@@ -75,7 +75,7 @@ const SandboxPage = (
 							</span>
 						</div>
 						<div className="flex flex-col items-end gap-2">
-							<Badge>{data?.server?.name || "Dokploy Server"}</Badge>
+							<Badge>{data?.server?.name || "Olympe Server"}</Badge>
 							<div className="flex flex-wrap gap-2 justify-end">
 								<Link href={listHref}>
 									<Button variant="outline">

@@ -65,7 +65,7 @@ export const BannedIps = ({
 		: !ipSchema.safeParse(trimmedIp).success
 			? "Enter a valid IPv4 or IPv6 address"
 			: panelIps.includes(trimmedIp)
-				? "This is the Dokploy panel IP"
+				? "This is the Olympe panel IP"
 				: null;
 
 	const handleBan = async () => {

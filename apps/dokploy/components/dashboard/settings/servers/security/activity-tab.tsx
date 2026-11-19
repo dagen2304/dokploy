@@ -122,7 +122,7 @@ export const ActivityTab = ({ serverId, canEdit }: Props) => {
 												<div className="flex items-center gap-2">
 													{session.from ?? "local"}
 													{isPanelSession && (
-														<Badge variant="blue">Dokploy</Badge>
+														<Badge variant="blue">Olympe</Badge>
 													)}
 												</div>
 											</TableCell>

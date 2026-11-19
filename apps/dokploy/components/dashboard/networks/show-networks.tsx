@@ -294,7 +294,7 @@ export const ShowNetworks = ({ serverId }: Props) => {
 						/>
 						<DialogAction
 							title="Delete network"
-							description={`The network "${row.original.name}" will be removed from Docker and Dokploy. This action cannot be undone.`}
+							description={`The network "${row.original.name}" will be removed from Docker and Olympe. This action cannot be undone.`}
 							onClick={async () => {
 								try {
 									await removeNetwork({

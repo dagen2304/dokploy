@@ -143,8 +143,8 @@ export const WebDomain = () => {
 								<div className="space-y-2">
 									<p className="font-medium">⚠️ Important: URL Change Impact</p>
 									<p>
-										If you change the Dokploy Server URL make sure to update
-										your Github Apps to keep the auto-deploy working and preview
+										If you change the Olympe Server URL make sure to update your
+										Github Apps to keep the auto-deploy working and preview
 										deployments working.
 									</p>
 								</div>

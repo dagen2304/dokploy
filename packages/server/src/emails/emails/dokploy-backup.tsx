@@ -10,6 +10,7 @@ import {
 	Tailwind,
 	Text,
 } from "@react-email/components";
+import { EMAIL_LOGO_URL } from "../olympe-logo";
 import { emailTailwindConfig } from "../tailwind-config";
 
 export type TemplateProps = {
@@ -25,7 +26,7 @@ export const DokployBackupEmail = ({
 	date = "2023-05-01T00:00:00.000Z",
 	backupSize,
 }: TemplateProps) => {
-	const previewText = `Dokploy instance backup was ${type === "success" ? "successful ✅" : "failed ❌"}`;
+	const previewText = `Olympe instance backup was ${type === "success" ? "successful ✅" : "failed ❌"}`;
 
 	return (
 		<Html>
@@ -36,23 +37,21 @@ export const DokployBackupEmail = ({
 					<Container className="border border-solid border-[#eaeaea] rounded-lg my-[40px] mx-auto p-[20px] max-w-[465px]">
 						<Section className="mt-[32px]">
 							<Img
-								src={
-									"https://raw.githubusercontent.com/Dokploy/dokploy/refs/heads/canary/apps/dokploy/logo.png"
-								}
-								width="100"
-								height="50"
-								alt="Dokploy"
+								src={EMAIL_LOGO_URL}
+								width="120"
+								height="41"
+								alt="Olympe"
 								className="my-0 mx-auto"
 							/>
 						</Section>
 						<Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
-							Dokploy Instance Backup
+							Olympe Instance Backup
 						</Heading>
 						<Text className="text-black text-[14px] leading-[24px]">
 							Hello,
 						</Text>
 						<Text className="text-black text-[14px] leading-[24px]">
-							Your Dokploy instance backup was{" "}
+							Your Olympe instance backup was{" "}
 							{type === "success"
 								? "successful ✅"
 								: "failed. Please check the error message below. ❌"}
@@ -61,7 +60,7 @@ export const DokployBackupEmail = ({
 						<Section className="flex text-black text-[14px] leading-[24px] bg-[#F4F4F5] rounded-lg p-2">
 							<Text className="!leading-3 font-bold">Details: </Text>
 							<Text className="!leading-3">
-								Backup Type: <strong>Complete Dokploy Instance</strong>
+								Backup Type: <strong>Complete Olympe Instance</strong>
 							</Text>
 							<Text className="!leading-3">
 								Content: <strong>/etc/dokploy + PostgreSQL Database</strong>

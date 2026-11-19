@@ -22,11 +22,11 @@ export const PathScreen = ({
 			eyebrow="Infrastructure"
 			title={
 				<>
-					Where should Dokploy deploy <em className="not-italic">your apps</em>?
+					Where should Olympe deploy <em className="not-italic">your apps</em>?
 				</>
 			}
 		>
-			Dokploy runs your apps on a server you own. Pick what fits you.
+			Olympe runs your apps on a server you own. Pick what fits you.
 		</ScreenHeading>
 		<ServerPathCards onHaveServer={onHaveServer} onNeedServer={onNeedServer} />
 		<div className="flex flex-col gap-6 border-t pt-6">

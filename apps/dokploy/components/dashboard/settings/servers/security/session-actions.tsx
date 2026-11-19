@@ -50,7 +50,7 @@ export const SessionActions = ({
 				title="Disconnect session"
 				description={
 					isPanelSession
-						? `This session comes from the Dokploy panel, probably a teammate using the Dokploy terminal. Disconnect ${target}?`
+						? `This session comes from the Olympe panel, probably a teammate using the Olympe terminal. Disconnect ${target}?`
 						: `${target} will be disconnected immediately. They can log in again unless you also ban their IP.`
 				}
 				type="default"

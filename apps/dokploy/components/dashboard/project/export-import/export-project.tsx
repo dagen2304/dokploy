@@ -133,7 +133,7 @@ export const ExportProject = ({
 					<DialogTitle>Export project</DialogTitle>
 					<DialogDescription>
 						Download the configuration of the selected services as an encrypted
-						file you can import into another Dokploy instance.
+						file you can import into another Olympe instance.
 					</DialogDescription>
 				</DialogHeader>
 

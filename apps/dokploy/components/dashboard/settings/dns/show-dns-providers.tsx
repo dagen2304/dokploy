@@ -45,7 +45,7 @@ export const ShowDnsProviders = () => {
 								DNS Providers
 							</CardTitle>
 							<CardDescription>
-								Connect a DNS provider so Dokploy can create the A/CNAME record
+								Connect a DNS provider so Olympe can create the A/CNAME record
 								for a domain instead of you setting it up by hand.
 							</CardDescription>
 						</CardHeader>
@@ -66,7 +66,7 @@ export const ShowDnsProviders = () => {
 								</span>
 								<span className="max-w-sm text-center text-sm text-muted-foreground">
 									Add Cloudflare or Route53 credentials to manage domain records
-									without leaving Dokploy.
+									without leaving Olympe.
 								</span>
 							</div>
 						) : (

@@ -169,7 +169,7 @@ export const ShowServers = () => {
 							runs next to the agent on 127.0.0.1:4510 when metrics are shipped.
 							Services deployed before Logs & Metrics need a redeploy to get the
 							labels it uses; until then their logs and container metrics are
-							not shipped from the Dokploy server.
+							not shipped from the Olympe server.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-2 py-8 border-t">
