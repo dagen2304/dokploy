@@ -94,6 +94,7 @@ export const olympeRouter = createTRPCRouter({
 			termsUrl: config.termsUrl,
 			privacyUrl: config.privacyUrl,
 			abuseEmail: config.abuseEmail,
+			contactEmail: config.contactEmail,
 			tenantAppsDomain: config.tenantAppsDomain,
 			annualFreeMonths: config.annualFreeMonths,
 			plans: config.multiTenant ? await listPlans() : [],

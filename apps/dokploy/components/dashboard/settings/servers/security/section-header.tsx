@@ -66,7 +66,7 @@ export const ErrorState = ({
 				</h3>
 				<p className="text-sm text-muted-foreground">
 					{isConnectionError
-						? "Dokploy could not reach this server over SSH. Check that it is online and reachable, then try again."
+						? "Olympe could not reach this server over SSH. Check that it is online and reachable, then try again."
 						: "The server returned an error while reading this information."}
 				</p>
 			</div>

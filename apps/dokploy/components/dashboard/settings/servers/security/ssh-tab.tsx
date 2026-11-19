@@ -79,7 +79,7 @@ export const SshTab = ({ serverId, canEdit }: Props) => {
 			{data.settings?.passwordAuthentication && (
 				<AlertBlock type="warning">
 					Password authentication is enabled, which makes the server a target
-					for brute force attacks. Dokploy connects with an SSH key, so it is
+					for brute force attacks. Olympe connects with an SSH key, so it is
 					safe to disable it if you also log in with a key.
 				</AlertBlock>
 			)}
@@ -106,7 +106,7 @@ export const SshTab = ({ serverId, canEdit }: Props) => {
 						<Label>Root login</Label>
 						<p className="text-sm text-muted-foreground">
 							{connectsAsRoot
-								? "Dokploy connects as root, so root login can't be fully disabled."
+								? "Olympe connects as root, so root login can't be fully disabled."
 								: "Whether root can log in over SSH."}
 						</p>
 					</div>
@@ -150,7 +150,7 @@ export const SshTab = ({ serverId, canEdit }: Props) => {
 					<DialogAction
 						title="Apply SSH settings"
 						type="default"
-						description="The SSH daemon will be reloaded with the new settings and existing sessions stay open. Dokploy then reconnects to verify it still has access; if it can't, the server restores the previous settings automatically within 60 seconds."
+						description="The SSH daemon will be reloaded with the new settings and existing sessions stay open. Olympe then reconnects to verify it still has access; if it can't, the server restores the previous settings automatically within 60 seconds."
 						disabled={updateSettings.isPending}
 						onClick={async () => {
 							try {
@@ -220,7 +220,7 @@ export const SshTab = ({ serverId, canEdit }: Props) => {
 													{key.comment || "-"}
 												</span>
 												{key.usedByDokploy && (
-													<Badge variant="blue">Dokploy</Badge>
+													<Badge variant="blue">Olympe</Badge>
 												)}
 											</div>
 										</TableCell>

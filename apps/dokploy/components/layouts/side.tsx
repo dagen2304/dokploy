@@ -49,6 +49,7 @@ import {
 	applyOlympeMenu,
 	OLYMPE_BILLING_ITEM,
 	OLYMPE_OPERATOR_ITEM,
+	withOlympeSupport,
 } from "@/components/olympe/menu";
 import { TruncateTooltip } from "@/components/shared/truncate-tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -987,17 +988,19 @@ export default function Page({ children }: Props) {
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 
 	const { data: olympe } = api.olympe.me.useQuery();
+	const { data: olympeInfo } = api.olympe.publicInfo.useQuery();
 
 	const {
 		home: menuHome,
 		settings: menuSettings,
-		help,
+		help: menuHelp,
 	} = createMenuForAuthUser({
 		auth,
 		permissions,
 		isCloud: !!isCloud,
 		whitelabeling,
 	});
+	const help = withOlympeSupport(menuHelp, olympeInfo?.contactEmail);
 	const filteredHome = applyOlympeMenu<NavItem>(menuHome, olympe);
 	const filteredSettings = applyOlympeMenu<NavItem>(
 		menuSettings,

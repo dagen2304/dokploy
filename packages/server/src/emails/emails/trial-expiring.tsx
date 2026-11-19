@@ -35,8 +35,8 @@ export const TrialExpiringEmail = ({
 	const dayLabel = daysRemaining === 1 ? "day" : "days";
 	const previewText =
 		daysRemaining === 1
-			? "Your Dokploy trial ends tomorrow"
-			: `Your Dokploy trial ends in ${daysRemaining} ${dayLabel}`;
+			? "Your Olympe trial ends tomorrow"
+			: `Your Olympe trial ends in ${daysRemaining} ${dayLabel}`;
 
 	return (
 		<Html>
@@ -50,7 +50,7 @@ export const TrialExpiringEmail = ({
 								src="https://raw.githubusercontent.com/Dokploy/website/refs/heads/main/apps/docs/public/logo-dokploy-blackpng.png"
 								width="190"
 								height="120"
-								alt="Dokploy"
+								alt="Olympe"
 								className="my-0 mx-auto"
 							/>
 						</Section>
@@ -118,7 +118,7 @@ export const TrialExpiringEmail = ({
 									href="https://dokploy.com"
 									className="text-[#71717a] underline"
 								>
-									Dokploy Cloud
+									Olympe Cloud
 								</Link>
 								. If you have any questions about your billing, please contact
 								our{" "}

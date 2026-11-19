@@ -243,9 +243,7 @@ export const AddSandbox = ({ serverId }: Props) => {
 											</SelectTrigger>
 											<SelectContent>
 												{showLocalOption && (
-													<SelectItem value="dokploy">
-														Dokploy Server
-													</SelectItem>
+													<SelectItem value="dokploy">Olympe Server</SelectItem>
 												)}
 												{servers?.map((server) => (
 													<SelectItem

@@ -146,7 +146,7 @@ const Register = ({ isCloud }: Props) => {
 								}
 							/>
 						</Link>
-						{isCloud ? "Create your Dokploy account" : "Setup the server"}
+						{isCloud ? "Create your Olympe account" : "Setup the server"}
 					</CardTitle>
 					<CardDescription className="text-center">
 						{isCloud
@@ -178,7 +178,7 @@ const Register = ({ isCloud }: Props) => {
 										aria-hidden
 									/>
 									<p className="text-sm text-muted-foreground">
-										You'll need a server (VPS) for Dokploy to deploy to. No
+										You'll need a server (VPS) for Olympe to deploy to. No
 										server yet? We'll help you get one from Hostinger, Hetzner,
 										Contabo or DigitalOcean.
 									</p>

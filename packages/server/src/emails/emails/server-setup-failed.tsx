@@ -27,7 +27,7 @@ export type TemplateProps = {
 export const ServerSetupFailedEmail = ({
 	userName = "User",
 	title = "This server has less than 2 GB of RAM",
-	body = "Dokploy needs 2 GB of RAM and 30 GB of disk to build and run apps, so the command stopped before installing anything.",
+	body = "Olympe needs 2 GB of RAM and 30 GB of disk to build and run apps, so the command stopped before installing anything.",
 	fix = [
 		"Resize the server to at least 2 GB of RAM in your provider's dashboard.",
 		"Wait for the resize to finish, then open the console as root.",
@@ -48,7 +48,7 @@ export const ServerSetupFailedEmail = ({
 								src="https://raw.githubusercontent.com/Dokploy/website/refs/heads/main/apps/docs/public/logo-dokploy-blackpng.png"
 								width="190"
 								height="120"
-								alt="Dokploy"
+								alt="Olympe"
 								className="my-0 mx-auto"
 							/>
 						</Section>
@@ -59,7 +59,7 @@ export const ServerSetupFailedEmail = ({
 							</Heading>
 							<Text className="text-[#71717a] text-[14px] leading-[22px] m-0 mb-[24px]">
 								Hello {userName}, one check failed while connecting your server
-								to Dokploy. Here is what happened and how to fix it.
+								to Olympe. Here is what happened and how to fix it.
 							</Text>
 
 							<Section className="bg-[#fef2f2] border border-solid border-[#fecaca] rounded-lg px-[20px] py-[16px] mb-[24px]">
@@ -105,7 +105,7 @@ export const ServerSetupFailedEmail = ({
 
 							<Text className="text-[#a1a1aa] text-[12px] leading-[18px] m-0">
 								You're receiving this because a server setup you started in
-								Dokploy Cloud didn't finish.
+								Olympe Cloud didn't finish.
 							</Text>
 						</Section>
 
@@ -116,7 +116,7 @@ export const ServerSetupFailedEmail = ({
 									href="https://dokploy.com"
 									className="text-[#71717a] underline"
 								>
-									Dokploy Cloud
+									Olympe Cloud
 								</Link>
 								. Need help? Join our{" "}
 								<Link

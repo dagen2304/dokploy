@@ -245,8 +245,8 @@ export const ConnectScreen = ({ onBack, onConnected }: Props) => {
 			<div className="flex flex-col gap-6">
 				<BackLink onClick={onBack} />
 				<ScreenHeading eyebrow="Connect" title="Connect your server.">
-					One command: paste it on your server and Dokploy finds it by itself.
-					Dokploy checks the server first and installs Docker for you.
+					One command: paste it on your server and Olympe finds it by itself.
+					Olympe checks the server first and installs Docker for you.
 				</ScreenHeading>
 			</div>
 
@@ -298,9 +298,9 @@ export const ConnectScreen = ({ onBack, onConnected }: Props) => {
 						</div>
 					) : (
 						<span className="text-sm text-muted-foreground">
-							It adds Dokploy's public SSH key and tells Dokploy where the
-							server is. Dokploy then installs Docker for you and shows the
-							progress here. It works once and expires in 1 hour.
+							It adds Olympe's public SSH key and tells Olympe where the server
+							is. Olympe then installs Docker for you and shows the progress
+							here. It works once and expires in 1 hour.
 						</span>
 					)}
 				</div>

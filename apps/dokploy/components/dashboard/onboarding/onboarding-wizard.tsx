@@ -127,7 +127,7 @@ export const OnboardingWizard = ({ onClose }: Props) => {
 					<DialogHeader>
 						<DialogTitle>Skip onboarding?</DialogTitle>
 						<DialogDescription>
-							If this is your first time using Dokploy, we recommend going
+							If this is your first time using Olympe, we recommend going
 							through these steps – it only takes a couple of minutes and gives
 							you a feel for how projects, servers, and deployments fit
 							together.

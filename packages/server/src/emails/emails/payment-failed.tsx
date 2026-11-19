@@ -34,7 +34,7 @@ export const PaymentFailedEmail = ({
 	date = "2024-01-01",
 	hostedInvoiceUrl = "https://invoice.stripe.com/example",
 }: TemplateProps) => {
-	const previewText = `Action required: Your Dokploy payment for ${amountDue} failed`;
+	const previewText = `Action required: Your Olympe payment for ${amountDue} failed`;
 	return (
 		<Html>
 			<Head />
@@ -48,7 +48,7 @@ export const PaymentFailedEmail = ({
 								src="https://raw.githubusercontent.com/Dokploy/website/refs/heads/main/apps/docs/public/logo-dokploy-blackpng.png"
 								width="190"
 								height="120"
-								alt="Dokploy"
+								alt="Olympe"
 								className="my-0 mx-auto"
 							/>
 						</Section>
@@ -143,7 +143,7 @@ export const PaymentFailedEmail = ({
 									href="https://dokploy.com"
 									className="text-[#71717a] underline"
 								>
-									Dokploy Cloud
+									Olympe Cloud
 								</Link>
 								. If you have any questions about your billing, please contact
 								our{" "}

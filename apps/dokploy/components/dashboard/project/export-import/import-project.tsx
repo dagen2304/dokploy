@@ -104,7 +104,7 @@ export const ImportProject = () => {
 				<DialogHeader>
 					<DialogTitle>Import project</DialogTitle>
 					<DialogDescription>
-						Create a new project from a file exported from another Dokploy
+						Create a new project from a file exported from another Olympe
 						instance. Services are created but not deployed.
 					</DialogDescription>
 				</DialogHeader>

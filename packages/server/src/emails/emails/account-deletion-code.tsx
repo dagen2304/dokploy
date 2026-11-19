@@ -37,7 +37,7 @@ export const AccountDeletionCodeTemplate = ({
 								src="https://raw.githubusercontent.com/Dokploy/website/refs/heads/main/apps/docs/public/logo-dokploy-blackpng.png"
 								width="190"
 								height="120"
-								alt="Dokploy"
+								alt="Olympe"
 								className="my-0 mx-auto"
 							/>
 						</Section>
@@ -48,7 +48,7 @@ export const AccountDeletionCodeTemplate = ({
 							</Heading>
 							<Text className="text-[#71717a] text-[14px] leading-[22px] m-0 mb-[24px]">
 								Hello {userName}, we received a request to permanently delete
-								your Dokploy account. Enter the code below to confirm it.
+								your Olympe account. Enter the code below to confirm it.
 							</Text>
 
 							<Section className="text-center mb-[24px]">
@@ -72,7 +72,7 @@ export const AccountDeletionCodeTemplate = ({
 									href="https://dokploy.com"
 									className="text-[#71717a] underline"
 								>
-									Dokploy support
+									Olympe support
 								</Link>
 								.
 							</Text>

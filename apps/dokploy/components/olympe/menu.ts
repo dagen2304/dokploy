@@ -63,3 +63,14 @@ export const applyOlympeMenu = <T extends MenuItem>(
 		);
 	return [...visible, ...extra];
 };
+
+// Support goes to KTC, not to Dokploy's community Discord: by e-mail when
+// OLYMPE_CONTACT_EMAIL is set, otherwise the entry is hidden.
+export const withOlympeSupport = <T extends { name: string; url: string }>(
+	items: T[],
+	contactEmail?: string | null,
+): T[] =>
+	items.flatMap((item) => {
+		if (item.name !== "Support") return [item];
+		return contactEmail ? [{ ...item, url: `mailto:${contactEmail}` }] : [];
+	});

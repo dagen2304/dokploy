@@ -160,7 +160,7 @@ const Service = (
 											}
 										>
 											<span className="truncate">
-												{data?.server?.name || "Dokploy Server"}
+												{data?.server?.name || "Olympe Server"}
 											</span>
 										</Badge>
 										{data?.server?.serverStatus === "inactive" && (

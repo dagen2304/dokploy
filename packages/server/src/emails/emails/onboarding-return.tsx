@@ -53,7 +53,7 @@ export const OnboardingReturnEmail = ({
 								src="https://raw.githubusercontent.com/Dokploy/website/refs/heads/main/apps/docs/public/logo-dokploy-blackpng.png"
 								width="190"
 								height="120"
-								alt="Dokploy"
+								alt="Olympe"
 								className="my-0 mx-auto"
 							/>
 						</Section>
@@ -63,9 +63,9 @@ export const OnboardingReturnEmail = ({
 								Connect your server to start deploying
 							</Heading>
 							<Text className="text-[#71717a] text-[14px] leading-[22px] m-0 mb-[24px]">
-								Hello {userName}, you created a Dokploy account but haven't
+								Hello {userName}, you created a Olympe account but haven't
 								connected a server yet. When you're ready, connecting one takes
-								about 2 minutes: run one command on the server, and Dokploy does
+								about 2 minutes: run one command on the server, and Olympe does
 								the rest.
 							</Text>
 
@@ -84,7 +84,7 @@ export const OnboardingReturnEmail = ({
 								</Text>
 								<Text className="text-[#71717a] text-[13px] leading-[20px] m-0 mb-[8px]">
 									Any VPS with Ubuntu or Debian, 2 GB of RAM or more and 30 GB
-									of disk works. These four work well with Dokploy:
+									of disk works. These four work well with Olympe:
 								</Text>
 								{providers.map((provider) => (
 									<Text
@@ -118,8 +118,8 @@ export const OnboardingReturnEmail = ({
 							<Hr className="border-[#e4e4e7] my-[24px]" />
 
 							<Text className="text-[#a1a1aa] text-[12px] leading-[18px] m-0">
-								You're receiving this because you created a Dokploy Cloud
-								account and haven't connected a server yet.
+								You're receiving this because you created a Olympe Cloud account
+								and haven't connected a server yet.
 							</Text>
 						</Section>
 
@@ -130,7 +130,7 @@ export const OnboardingReturnEmail = ({
 									href="https://dokploy.com"
 									className="text-[#71717a] underline"
 								>
-									Dokploy Cloud
+									Olympe Cloud
 								</Link>
 								. Need help? Join our{" "}
 								<Link

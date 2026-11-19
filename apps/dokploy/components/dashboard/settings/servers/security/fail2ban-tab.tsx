@@ -145,7 +145,7 @@ export const Fail2banTab = ({ serverId, canEdit }: Props) => {
 					</Badge>
 				</div>
 				{data.installed && !data.managedByDokploy && (
-					<Badge variant="yellow">Not configured by Dokploy</Badge>
+					<Badge variant="yellow">Not configured by Olympe</Badge>
 				)}
 				{data.installed && (
 					<div className="ml-auto flex items-center gap-2">
@@ -291,8 +291,8 @@ export const Fail2banTab = ({ serverId, canEdit }: Props) => {
 										{(data.panelIps ?? []).length > 0 && (
 											<>
 												{" "}
-												The Dokploy panel ({(data.panelIps ?? []).join(", ")})
-												is always whitelisted.
+												The Olympe panel ({(data.panelIps ?? []).join(", ")}) is
+												always whitelisted.
 											</>
 										)}
 									</FormDescription>

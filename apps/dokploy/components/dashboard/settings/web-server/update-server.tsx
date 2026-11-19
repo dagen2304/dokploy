@@ -155,7 +155,7 @@ export const UpdateServer = ({
 				{!hasCheckedUpdate && (
 					<div className="mb-8">
 						<p className="text text-muted-foreground">
-							Check for new releases and update Dokploy.
+							Check for new releases and update Olympe.
 							<br />
 							<br />
 							We recommend checking for updates regularly to ensure you have the

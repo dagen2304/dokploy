@@ -129,7 +129,7 @@ export const ConnectServer = ({ session, onCompleteSetup, onClose }: Props) => {
 						</span>
 						<span className="text-muted-foreground">
 							{pending.runSetup
-								? "Dokploy is installing Docker, Traefik and the rest of the server requirements. This takes a few minutes."
+								? "Olympe is installing Docker, Traefik and the rest of the server requirements. This takes a few minutes."
 								: "Complete the setup to install Docker, Traefik and the rest of the server requirements. If the IP address is not right, fix it with Edit Server first."}
 						</span>
 					</div>
@@ -166,10 +166,10 @@ export const ConnectServer = ({ session, onCompleteSetup, onClose }: Props) => {
 			<div className="flex flex-col gap-4">
 				<div className="flex flex-col gap-2 text-sm">
 					<span>
-						Run this command on your server as root. It adds Dokploy&apos;s SSH
+						Run this command on your server as root. It adds Olympe&apos;s SSH
 						key and registers the server
-						{pending.runSetup ? ", then Dokploy installs its requirements" : ""}
-						. It works once and expires in 1 hour.
+						{pending.runSetup ? ", then Olympe installs its requirements" : ""}.
+						It works once and expires in 1 hour.
 					</span>
 					<div className="flex items-start justify-between gap-2 rounded-lg bg-muted p-3 font-mono text-xs break-all">
 						<span>{pending.command}</span>
@@ -322,7 +322,7 @@ export const ConnectServer = ({ session, onCompleteSetup, onClose }: Props) => {
 							<div className="space-y-0.5">
 								<FormLabel>Run the server setup</FormLabel>
 								<FormDescription>
-									Dokploy installs Docker, Traefik and the rest of the server
+									Olympe installs Docker, Traefik and the rest of the server
 									requirements as soon as the server connects.
 								</FormDescription>
 							</div>

@@ -138,8 +138,8 @@ export const SyncNetworks = ({ serverId }: Props) => {
 						Sync networks
 					</DialogTitle>
 					<DialogDescription>
-						Import networks that exist in Docker but not in Dokploy, and clean
-						up records whose network no longer exists.
+						Import networks that exist in Docker but not in Olympe, and clean up
+						records whose network no longer exists.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -201,7 +201,7 @@ export const SyncNetworks = ({ serverId }: Props) => {
 									</span>
 									<span className="text-xs text-muted-foreground">
 										These networks were deleted and recreated in Docker under
-										the same name — attributes in Dokploy are outdated.
+										the same name — attributes in Olympe are outdated.
 									</span>
 									{data.changed.map((changed) => (
 										<div
@@ -239,8 +239,8 @@ export const SyncNetworks = ({ serverId }: Props) => {
 										Missing in Docker ({data.missing.length})
 									</span>
 									<span className="text-xs text-muted-foreground">
-										These records exist in Dokploy but their network is gone
-										from Docker.
+										These records exist in Olympe but their network is gone from
+										Docker.
 									</span>
 									{data.missing.map((stale) => (
 										<div
