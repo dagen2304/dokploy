@@ -142,6 +142,8 @@ export const olympeRouter = createTRPCRouter({
 		return {
 			provider: config.paymentProvider,
 			simulated: config.paymentProvider === "simulated",
+			paymentsEnabled: config.paymentsEnabled,
+			contactEmail: config.contactEmail,
 			durations: BILLING_DURATIONS,
 			methods: PAYMENT_METHODS.map((id) => ({
 				id,
@@ -195,7 +197,10 @@ export const olympeRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			if (getPaymentProvider().id !== "simulated") {
+			if (
+				getPaymentProvider().id !== "simulated" ||
+				!getOlympeConfig().paymentsEnabled
+			) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
 					message: "Le paiement simulé est désactivé.",

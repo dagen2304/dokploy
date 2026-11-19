@@ -8,14 +8,17 @@ import {
 	mongo,
 	mysql,
 	olympeDiskUsage,
+	olympeReservation,
 	olympeSignup,
 	postgres,
 	projects,
 	redis,
 } from "@dokploy/server/db/schema";
 import { execAsync } from "@dokploy/server/utils/process/execAsync";
-import { eq, lt } from "drizzle-orm";
+import { eq, inArray, lt } from "drizzle-orm";
 import { scheduleJob } from "node-schedule";
+import { quote } from "shell-quote";
+import { listTrash } from "../trash";
 import { notifyOwners, runBillingCycle } from "./billing";
 import { getOlympeConfig } from "./config";
 import { isClientOrganization } from "./tenancy";
@@ -156,6 +159,64 @@ export const purgeOldSignups = async (now = new Date()) => {
 	await db.delete(olympeSignup).where(lt(olympeSignup.createdAt, limit));
 };
 
+export const selectOrphanVolumes = (
+	volumes: string[],
+	goneAppNames: string[],
+	liveAppNames: Iterable<string>,
+) => {
+	const live = [...liveAppNames];
+	return volumes
+		.map((volume) => volume.trim())
+		.filter(
+			(volume) =>
+				volume &&
+				ownerAppName(volume, goneAppNames) &&
+				// A longer live name that shares the prefix keeps its volume.
+				!ownerAppName(volume, live),
+		);
+};
+
+// Volumes of client services deleted more than the trash period ago: nothing
+// can restore them any more and they no longer count in any quota. Only names
+// Olympe once reserved for a client are considered, so operator volumes and
+// volumes created outside Olympe are never touched.
+export const removeOrphanClientVolumes = async () => {
+	const reservations = await db.query.olympeReservation.findMany({
+		columns: { appName: true, organizationId: true },
+	});
+	if (reservations.length === 0) return [];
+
+	const live = new Set<string>();
+	for (const table of SERVICE_TABLES) {
+		const rows = await db.select({ appName: table.appName }).from(table);
+		for (const row of rows) live.add(row.appName);
+	}
+	const organizations = new Set(reservations.map((row) => row.organizationId));
+	for (const organizationId of organizations) {
+		for (const item of await listTrash(organizationId)) live.add(item.appName);
+	}
+
+	const gone = reservations
+		.map((row) => row.appName)
+		.filter((appName) => !live.has(appName));
+	if (gone.length === 0) return [];
+
+	const { stdout } = await execAsync("docker volume ls --format '{{.Name}}'");
+	const removed: string[] = [];
+	for (const volume of selectOrphanVolumes(stdout.split("\n"), gone, live)) {
+		try {
+			await execAsync(`docker volume rm ${quote([volume])}`);
+			removed.push(volume);
+		} catch (error) {
+			console.error(`[olympe] orphan volume ${volume}`, error);
+		}
+	}
+	await db
+		.delete(olympeReservation)
+		.where(inArray(olympeReservation.appName, gone));
+	return removed;
+};
+
 export const initOlympeJobs = () => {
 	if (!getOlympeConfig().multiTenant) return;
 	scheduleJob("olympe-billing-cycle", "7 * * * *", () =>
@@ -166,6 +227,11 @@ export const initOlympeJobs = () => {
 	scheduleJob("olympe-signup-purge", "17 3 * * *", () =>
 		purgeOldSignups().catch((error) =>
 			console.error("[olympe] signup purge", error),
+		),
+	);
+	scheduleJob("olympe-orphan-volumes", "27 4 * * *", () =>
+		removeOrphanClientVolumes().catch((error) =>
+			console.error("[olympe] orphan volumes", error),
 		),
 	);
 	scheduleJob("olympe-disk-usage", "37 * * * *", () =>

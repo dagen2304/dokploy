@@ -33,6 +33,9 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 	card: "Carte bancaire",
 };
 
+export const PAYMENTS_DISABLED_MESSAGE =
+	"Le paiement en ligne arrive bientôt. En attendant, contactez-nous pour passer à un forfait payant.";
+
 export type CheckoutSession = {
 	providerReference: string;
 	redirectUrl: string;
@@ -140,6 +143,12 @@ export const startCheckout = async ({
 	months: number;
 	method: PaymentMethod;
 }) => {
+	if (!getOlympeConfig().paymentsEnabled) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: PAYMENTS_DISABLED_MESSAGE,
+		});
+	}
 	if (
 		!BILLING_DURATIONS.includes(months as (typeof BILLING_DURATIONS)[number])
 	) {
