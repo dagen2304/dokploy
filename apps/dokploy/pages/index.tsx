@@ -4,6 +4,7 @@ import {
 	isAdminPresent,
 } from "@dokploy/server";
 import { validateRequest } from "@dokploy/server/lib/auth";
+import { getOlympeConfig } from "@dokploy/server/services/olympe/config";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Fingerprint } from "lucide-react";
 import type { GetServerSidePropsContext } from "next";
@@ -58,9 +59,14 @@ type LoginForm = z.infer<typeof LoginSchema>;
 
 interface Props {
 	IS_CLOUD: boolean;
+	emailPasswordReset?: boolean;
 	enforceSSO: boolean;
 }
-export default function Home({ IS_CLOUD, enforceSSO }: Props) {
+export default function Home({
+	IS_CLOUD,
+	enforceSSO,
+	emailPasswordReset,
+}: Props) {
 	const router = useRouter();
 	const { config: whitelabeling } = useWhitelabelingPublic();
 	const { data: showSignInWithSSO } = api.sso.showSignInWithSSO.useQuery();
@@ -510,7 +516,7 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 					</div>
 
 					<div className="mt-4 text-sm flex flex-row justify-center gap-2">
-						{IS_CLOUD ? (
+						{IS_CLOUD || emailPasswordReset ? (
 							<Link
 								className="hover:underline text-muted-foreground"
 								href="/send-reset-password"
@@ -604,6 +610,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 			trpcState: helpers.dehydrate(),
 			hasAdmin,
 			enforceSSO: webServerSettings?.enforceSSO ?? false,
+			emailPasswordReset: getOlympeConfig().emailConfigured,
 		},
 	};
 }

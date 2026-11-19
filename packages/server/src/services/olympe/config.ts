@@ -85,6 +85,7 @@ export const getOlympeConfig = (env: Env = process.env) => {
 			Number.parseFloat(env.OLYMPE_DEFAULT_SERVICE_CPU ?? "") || 0.5,
 		defaultServiceMemoryMb: int(env.OLYMPE_DEFAULT_SERVICE_MEMORY_MB, 512),
 		diskWarnPercent: int(env.OLYMPE_DISK_WARN_PERCENT, 80),
+		emailConfigured: Boolean(env.SMTP_SERVER?.trim()),
 		// Without SMTP nobody could ever confirm their address.
 		emailVerificationRequired:
 			Boolean(env.SMTP_SERVER?.trim()) &&

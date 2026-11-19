@@ -26,6 +26,7 @@ import {
 	checkSelfSignup,
 	createClientSpace,
 	isSelfSignupRequest,
+	sendOlympePasswordResetEmail,
 	sendOlympeVerificationEmail,
 } from "../services/olympe/signup";
 import { createAuditLog } from "../services/proprietary/audit-log";
@@ -256,6 +257,10 @@ const createBetterAuth = () =>
 			},
 			sendResetPassword: async ({ user, url }) => {
 				const safeUrl = await rewriteToCanonicalOrigin(url);
+				if (!IS_CLOUD) {
+					await sendOlympePasswordResetEmail(user, safeUrl);
+					return;
+				}
 				await sendEmail({
 					email: user.email,
 					subject: "Reset your password",

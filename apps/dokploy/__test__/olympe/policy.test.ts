@@ -217,4 +217,11 @@ describe("getOlympeConfig", () => {
 		expect(config.protectedDomains).toEqual(["a.com", "b.org"]);
 		expect(config.allowPublishedPorts).toBe(true);
 	});
+
+	it("turns e-mail features on with SMTP only", () => {
+		expect(getOlympeConfig({}).emailConfigured).toBe(false);
+		const config = getOlympeConfig({ SMTP_SERVER: "smtp.resend.com" });
+		expect(config.emailConfigured).toBe(true);
+		expect(config.emailVerificationRequired).toBe(true);
+	});
 });

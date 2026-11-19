@@ -169,6 +169,21 @@ export const sendOlympeVerificationEmail = async (
 	});
 };
 
+export const sendOlympePasswordResetEmail = async (
+	user: { name?: string | null; email: string },
+	url: string,
+) => {
+	const name = user.name?.trim() || "";
+	await sendEmail({
+		email: user.email,
+		subject: "Olympe — réinitialisation de votre mot de passe",
+		text: `<p>Bonjour ${name},</p>
+<p>Vous avez demandé à réinitialiser le mot de passe de votre compte Olympe :</p>
+<p><a href="${url}">Choisir un nouveau mot de passe</a></p>
+<p>Ce lien est valable une heure. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message : votre mot de passe actuel reste valable.</p>`,
+	});
+};
+
 export const hasSelfSignedUp = async (email: string) =>
 	Boolean(
 		await db.query.olympeSignup.findFirst({
