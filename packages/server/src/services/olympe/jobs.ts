@@ -8,12 +8,13 @@ import {
 	mongo,
 	mysql,
 	olympeDiskUsage,
+	olympeSignup,
 	postgres,
 	projects,
 	redis,
 } from "@dokploy/server/db/schema";
 import { execAsync } from "@dokploy/server/utils/process/execAsync";
-import { eq } from "drizzle-orm";
+import { eq, lt } from "drizzle-orm";
 import { scheduleJob } from "node-schedule";
 import { notifyOwners, runBillingCycle } from "./billing";
 import { getOlympeConfig } from "./config";
@@ -146,11 +147,25 @@ export const measureDiskUsage = async () => {
 	}
 };
 
+// Sign-up records only serve to stop repeated trials; they are not kept forever.
+export const purgeOldSignups = async (now = new Date()) => {
+	const { signupRetentionDays } = getOlympeConfig();
+	const limit = new Date(
+		now.getTime() - signupRetentionDays * 24 * 60 * 60 * 1000,
+	);
+	await db.delete(olympeSignup).where(lt(olympeSignup.createdAt, limit));
+};
+
 export const initOlympeJobs = () => {
 	if (!getOlympeConfig().multiTenant) return;
 	scheduleJob("olympe-billing-cycle", "7 * * * *", () =>
 		runBillingCycle().catch((error) =>
 			console.error("[olympe] billing cycle", error),
+		),
+	);
+	scheduleJob("olympe-signup-purge", "17 3 * * *", () =>
+		purgeOldSignups().catch((error) =>
+			console.error("[olympe] signup purge", error),
 		),
 	);
 	scheduleJob("olympe-disk-usage", "37 * * * *", () =>

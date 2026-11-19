@@ -65,6 +65,8 @@ export const getOlympeConfig = (env: Env = process.env) => {
 		defaultPlanSlug: env.OLYMPE_DEFAULT_PLAN?.trim() || "essai",
 		graceDays: int(env.OLYMPE_GRACE_DAYS, 3),
 		deleteAfterDays: int(env.OLYMPE_DELETE_AFTER_DAYS, 30),
+		deletionWarningDays: int(env.OLYMPE_DELETE_WARNING_DAYS, 7),
+		signupRetentionDays: int(env.OLYMPE_SIGNUP_RETENTION_DAYS, 365),
 		reminderDays: (env.OLYMPE_REMINDER_DAYS
 			? list(env.OLYMPE_REMINDER_DAYS).map(Number)
 			: [7, 3, 1]
@@ -78,8 +80,8 @@ export const getOlympeConfig = (env: Env = process.env) => {
 		turnstileSiteKey: env.TURNSTILE_SITE_KEY?.trim() || null,
 		turnstileSecretKey: env.TURNSTILE_SECRET_KEY?.trim() || null,
 		abuseEmail: env.OLYMPE_ABUSE_EMAIL?.trim() || null,
-		termsUrl: env.OLYMPE_TERMS_URL?.trim() || null,
-		privacyUrl: env.OLYMPE_PRIVACY_URL?.trim() || null,
+		termsUrl: env.OLYMPE_TERMS_URL?.trim() || "/conditions",
+		privacyUrl: env.OLYMPE_PRIVACY_URL?.trim() || "/confidentialite",
 		suspendedPageUrl: env.OLYMPE_SUSPENDED_URL?.trim() || null,
 		defaultServiceCpu:
 			Number.parseFloat(env.OLYMPE_DEFAULT_SERVICE_CPU ?? "") || 0.5,

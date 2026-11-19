@@ -8,6 +8,7 @@ import {
 	user,
 	verification,
 } from "@dokploy/server/db/schema";
+import { eraseClientSpace } from "@dokploy/server/services/olympe/erase";
 import { removeVectorAgents } from "@dokploy/server/services/organization";
 import { TRPCError } from "@trpc/server";
 import { eq, inArray } from "drizzle-orm";
@@ -136,6 +137,7 @@ export const deleteUserAccountData = async (userId: string) => {
 	});
 	for (const org of ownedOrganizations) {
 		await removeVectorAgents(org.id);
+		await eraseClientSpace(org.id);
 	}
 
 	return db.transaction(async (tx) => {

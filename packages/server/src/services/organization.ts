@@ -1,6 +1,7 @@
 import { IS_CLOUD } from "@dokploy/server/constants";
 import { db } from "@dokploy/server/db";
 import { organization } from "@dokploy/server/db/schema";
+import { eraseClientSpace } from "@dokploy/server/services/olympe/erase";
 import { findServersByOrganizationForVectorAgent } from "@dokploy/server/services/server";
 import {
 	getWebServerSettings,
@@ -44,6 +45,7 @@ export const removeVectorAgents = async (organizationId: string) => {
 
 export const deleteOrganization = async (organizationId: string) => {
 	await removeVectorAgents(organizationId);
+	await eraseClientSpace(organizationId);
 	return await db
 		.delete(organization)
 		.where(eq(organization.id, organizationId));
