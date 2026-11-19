@@ -110,6 +110,7 @@ export default function Signup({
 			email: form.email.trim(),
 			password: form.password,
 			name: form.firstName.trim(),
+			callbackURL: "/dashboard/home",
 			lastName: form.lastName.trim(),
 			fetchOptions: token
 				? { headers: { "x-turnstile-token": token } }

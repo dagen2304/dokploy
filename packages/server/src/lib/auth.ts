@@ -115,7 +115,10 @@ const createBetterAuth = () =>
 			"/scim/list-provider-connections",
 			"/scim/get-provider-connection",
 			"/scim/delete-provider-connection",
-			...(!IS_CLOUD ? ["/verify-email"] : []),
+			// Olympe confirms self-signed-up addresses once SMTP is configured.
+			...(!IS_CLOUD && !getOlympeConfig().emailVerificationRequired
+				? ["/verify-email"]
+				: []),
 		],
 		secret: betterAuthSecret,
 		onAPIError: {
