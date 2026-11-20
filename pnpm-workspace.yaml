@@ -11,3 +11,20 @@ packages:
 # minimumReleaseAge: 1440
 
 
+
+# Advisories reviewed for Olympe on 2026-11-20 (see the vulnerability report).
+# Each is fixed only in better-auth 1.7, which Dokploy has not adopted yet, and
+# none applies to this configuration. Remove an entry as soon as better-auth
+# moves to 1.7.
+auditConfig:
+  ignoreGhsas:
+    # Magic link plugin: not enabled.
+    - GHSA-965c-763c-88jm
+    # OAuth Proxy plugin: not enabled.
+    - GHSA-r4xp-prcw-77qf
+    # Device authorization plugin: not enabled.
+    - GHSA-q84f-53jg-9ppm
+    # SCIM: token generation disabled, no provider can exist.
+    - GHSA-j8v8-g9cx-5qf4
+    # Rate limit uses memory storage, not the database adapter.
+    - GHSA-44jh-23m7-hpcf

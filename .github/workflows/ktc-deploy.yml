@@ -6,13 +6,45 @@ on:
   push:
     tags: ["ktc-v*"]
   workflow_dispatch:
+    inputs:
+      skip_audit:
+        description: "Déployer même si l'audit trouve une faille (urgence uniquement)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
   packages: write
 
 jobs:
+  # Bloque le déploiement si une dépendance a une faille élevée ou critique
+  # qui n'a pas été examinée (exceptions dans pnpm-workspace.yaml).
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Audit des dépendances
+        run: |
+          if pnpm audit --audit-level high; then
+            exit 0
+          fi
+          if [ "${{ inputs.skip_audit }}" = "true" ]; then
+            echo "::warning::Faille non examinée : déploiement forcé (skip_audit)."
+            exit 0
+          fi
+          echo "::error::Faille élevée ou critique non examinée. Mettez la dépendance à jour, ou ajoutez une exception justifiée dans pnpm-workspace.yaml."
+          exit 1
+
   build-and-deploy:
+    needs: audit
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
