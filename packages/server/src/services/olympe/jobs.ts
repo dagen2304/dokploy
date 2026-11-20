@@ -23,6 +23,7 @@ import { notifyOwners, runBillingCycle } from "./billing";
 import { getOlympeConfig } from "./config";
 import { isClientOrganization } from "./tenancy";
 import { getTenant } from "./tenants";
+import { closeTraefikInsecureApi } from "./traefik";
 
 const UNIT_BYTES: Record<string, number> = {
 	B: 1,
@@ -219,6 +220,9 @@ export const removeOrphanClientVolumes = async () => {
 
 export const initOlympeJobs = () => {
 	if (!getOlympeConfig().multiTenant) return;
+	closeTraefikInsecureApi().catch((error) =>
+		console.error("[olympe] closing the Traefik API", error),
+	);
 	scheduleJob("olympe-billing-cycle", "7 * * * *", () =>
 		runBillingCycle().catch((error) =>
 			console.error("[olympe] billing cycle", error),

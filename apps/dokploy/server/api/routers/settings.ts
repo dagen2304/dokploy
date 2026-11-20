@@ -59,6 +59,10 @@ import {
 	writeTraefikSetup,
 } from "@dokploy/server";
 import { db } from "@dokploy/server/db";
+import {
+	isClientOrganization,
+	redactServerSettingsForClient,
+} from "@dokploy/server/services/olympe/tenancy";
 import { checkPermission } from "@dokploy/server/services/permission";
 import { generateOpenApiDocument } from "@dokploy/trpc-openapi";
 import { TRPCError } from "@trpc/server";
@@ -136,6 +140,9 @@ export const settingsRouter = createTRPCRouter({
 			return current;
 		}
 		const { sshPrivateKey: _, ...settings } = current;
+		if (isClientOrganization(ctx.session.activeOrganizationId)) {
+			return redactServerSettingsForClient(settings);
+		}
 		if (ctx.user.role === "owner" || ctx.user.role === "admin") {
 			return settings;
 		}

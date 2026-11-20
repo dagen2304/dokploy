@@ -1,7 +1,10 @@
 import type { InferResultType } from "@dokploy/server/types/with";
 import type { CreateServiceOptions } from "dockerode";
 import { resolveServiceNetworks } from "../../services/network";
-import { enforceTenantServicePolicy } from "../../services/olympe/enforce";
+import {
+	enforceTenantServicePolicy,
+	tenantContainerSpec,
+} from "../../services/olympe/enforce";
 import { buildDokployLabels } from "../docker/dokploy-labels";
 import {
 	calculateResources,
@@ -79,6 +82,7 @@ export const buildMariadb = async (rawMariadb: MariadbNested) => {
 		Name: appName,
 		TaskTemplate: {
 			ContainerSpec: {
+				...tenantContainerSpec(mariadb),
 				HealthCheck,
 				Image: dockerImage,
 				Env: envVariables,

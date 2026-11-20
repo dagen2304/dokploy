@@ -23,7 +23,10 @@ import { findDeploymentById } from "./deployment";
 import type { Environment } from "./environment";
 import type { Mount } from "./mount";
 import { resolveServiceNetworks } from "./network";
-import { enforceTenantServicePolicy } from "./olympe/enforce";
+import {
+	enforceTenantServicePolicy,
+	tenantContainerSpec,
+} from "./olympe/enforce";
 import type { Port } from "./port";
 import type { Project } from "./project";
 import {
@@ -279,6 +282,7 @@ const rollbackApplication = async (
 		Name: appName,
 		TaskTemplate: {
 			ContainerSpec: {
+				...tenantContainerSpec(resolvedContext),
 				HealthCheck,
 				Image: rollbackImage,
 				Env: envVariables,

@@ -3,6 +3,7 @@ import { paths } from "@dokploy/server/constants";
 import type { InferResultType } from "@dokploy/server/types/with";
 import boxen from "boxen";
 import { quote } from "shell-quote";
+import { isolatedDockerConfig } from "../../services/olympe/docker-config";
 import { writeDomainsToCompose } from "../docker/domain";
 import {
 	encodeBase64,
@@ -30,6 +31,7 @@ export const getBuildComposeCommand = async (rawCompose: ComposeNested) => {
 		? getCreateEnvFileCommand(compose)
 		: "";
 	const exportEnvCommand = getExportEnvCommand(compose);
+	const dockerConfig = await isolatedDockerConfig(compose);
 
 	const newCompose = await writeDomainsToCompose(compose, domains);
 	const logContent = `
@@ -52,6 +54,7 @@ Compose Type: ${composeType} ✅`;
 
 	const bashCommand = `
 	set -e
+	${dockerConfig.setup}
 	{
 		echo ${quote([logBox])};
 
@@ -62,7 +65,7 @@ Compose Type: ${composeType} ✅`;
 		cd ${quote([projectPath])};
 
 		${compose.isolatedDeployment ? `docker network inspect ${compose.appName} >/dev/null 2>&1 || docker network create ${compose.composeType === "stack" ? "--driver overlay" : ""} --attachable ${compose.appName}` : ""}
-		env -i PATH="$PATH" HOME="$HOME" ${exportEnvCommand} docker ${command.split(" ").join(" ")} 2>&1 || { echo "Error: ❌ Docker command failed"; exit 1; }
+		env -i PATH="$PATH" HOME="$HOME" ${exportEnvCommand} ${dockerConfig.env} docker ${command.split(" ").join(" ")} 2>&1 || { echo "Error: ❌ Docker command failed"; exit 1; }
 		${compose.isolatedDeployment ? `docker network connect ${compose.appName} $(docker ps --filter "name=dokploy-traefik" -q) >/dev/null 2>&1` : ""}
 
 		echo "Docker Compose Deployed: ✅";

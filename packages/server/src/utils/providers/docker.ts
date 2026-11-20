@@ -1,3 +1,4 @@
+import { isolatedDockerConfig } from "@dokploy/server/services/olympe/docker-config";
 import { safeDockerLoginCommand } from "@dokploy/server/services/registry";
 import { quote } from "shell-quote";
 import type { ApplicationNested } from "../builders";
@@ -10,6 +11,7 @@ export const buildRemoteDocker = async (application: ApplicationNested) => {
 			throw new Error("Docker image not found");
 		}
 		let command = `
+${(await isolatedDockerConfig(application)).setup}
 echo ${quote([`Pulling ${dockerImage}`])};
 		`;
 

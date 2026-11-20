@@ -83,6 +83,9 @@ export const getOlympeConfig = (env: Env = process.env) => {
 			flag(env.OLYMPE_ALLOW_SIMULATED_PAYMENTS),
 		signupsPerIpPerDay: int(env.OLYMPE_SIGNUPS_PER_IP_PER_DAY, 3),
 		blockedEmailDomains: list(env.OLYMPE_BLOCKED_EMAIL_DOMAINS),
+		// Only true when the panel sits behind the Cloudflare proxy; otherwise
+		// anyone can send CF-Connecting-IP and pick the address we rate-limit.
+		trustCloudflareIp: flag(env.OLYMPE_TRUST_CLOUDFLARE_IP),
 		turnstileSiteKey: env.TURNSTILE_SITE_KEY?.trim() || null,
 		turnstileSecretKey: env.TURNSTILE_SECRET_KEY?.trim() || null,
 		abuseEmail: env.OLYMPE_ABUSE_EMAIL?.trim() || null,

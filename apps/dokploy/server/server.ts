@@ -15,6 +15,7 @@ import {
 	setupDirectories,
 	startTraefikAfterFailedBoot,
 } from "@dokploy/server";
+import { getOlympeConfig } from "@dokploy/server/services/olympe/config";
 import { initOlympeJobs } from "@dokploy/server/services/olympe/jobs";
 import { config } from "dotenv";
 import next from "next";
@@ -47,7 +48,13 @@ const handle = app.getRequestHandler();
 void app.prepare().then(async () => {
 	try {
 		console.log("Running DokployVersion: ", packageInfo.version);
+		// Panel host only, without includeSubDomains: client apps live on
+		// subdomains of the same zone and choose their own HTTPS policy.
+		const sendHsts = getOlympeConfig().multiTenant;
 		const server = http.createServer((req, res) => {
+			if (sendHsts && req.headers["x-forwarded-proto"] === "https") {
+				res.setHeader("Strict-Transport-Security", "max-age=31536000");
+			}
 			handle(req, res);
 		});
 

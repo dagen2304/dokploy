@@ -14,6 +14,7 @@ import type {
 } from "dockerode";
 import { stringify } from "yaml";
 import { paths } from "../constants";
+import { getOlympeConfig } from "../services/olympe/config";
 import { sleep } from "../utils/process/execAsync";
 import { getRemoteDocker } from "../utils/servers/remote-docker";
 import type { FileConfig } from "../utils/traefik/file-types";
@@ -495,7 +496,9 @@ export const getDefaultTraefikConfig = () => {
 			},
 		},
 		api: {
-			insecure: true,
+			// Olympe: Traefik joins every client network, so an open API would
+			// list all clients' routers to any of them.
+			insecure: !getOlympeConfig().multiTenant,
 		},
 		...(process.env.NODE_ENV === "production" && {
 			certificatesResolvers: {
@@ -553,7 +556,7 @@ export const getDefaultServerTraefikConfig = (withSwarmProvider = true) => {
 			},
 		},
 		api: {
-			insecure: true,
+			insecure: !getOlympeConfig().multiTenant,
 		},
 		certificatesResolvers: {
 			letsencrypt: {
