@@ -22,9 +22,13 @@ const SKIP_SELECTOR = [
 	".cm-editor",
 	".xterm",
 	".monaco-editor",
-	".font-mono",
 	"[data-no-translate]",
 ].join(",");
+
+// Monospace usually holds code or identifiers, but some screens (onboarding)
+// use it for labels: those opt in with data-translate-mono.
+const isUntranslatedMono = (element: Element) =>
+	!!element.closest(".font-mono") && !element.closest("[data-translate-mono]");
 
 const ATTRIBUTES = ["placeholder", "title", "aria-label"] as const;
 
@@ -107,7 +111,8 @@ export const translateText = (value: string): string | null => {
 };
 
 const isSkipped = (element: Element | null) =>
-	!!element?.closest(SKIP_SELECTOR);
+	!!element &&
+	(!!element.closest(SKIP_SELECTOR) || isUntranslatedMono(element));
 
 const translateElementAttributes = (element: Element) => {
 	if (isSkipped(element)) return;
