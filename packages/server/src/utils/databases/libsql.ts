@@ -1,7 +1,10 @@
 import type { InferResultType } from "@dokploy/server/types/with";
 import type { CreateServiceOptions, PortConfig } from "dockerode";
 import { resolveServiceNetworks } from "../../services/network";
-import { enforceTenantServicePolicy } from "../../services/olympe/enforce";
+import {
+	enforceTenantServicePolicy,
+	tenantContainerSpec,
+} from "../../services/olympe/enforce";
 import { buildDokployLabels } from "../docker/dokploy-labels";
 import {
 	calculateResources,
@@ -92,6 +95,7 @@ export const buildLibsql = async (rawLibsql: LibsqlNested) => {
 		Name: appName,
 		TaskTemplate: {
 			ContainerSpec: {
+				...tenantContainerSpec(libsql),
 				HealthCheck,
 				Image: "ghcr.io/tursodatabase/libsql-server:v0.24.32",
 				Env: envVariables,

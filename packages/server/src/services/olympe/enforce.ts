@@ -74,6 +74,28 @@ type SwarmService = {
 
 // Runs before every swarm service (application, preview, database) is created
 // or updated. Operator services pass through untouched.
+// Capabilities no web workload needs that help an escape or attacks on the
+// shared network (raw packets, device nodes, file capabilities, audit log).
+export const TENANT_DROPPED_CAPABILITIES = [
+	"NET_RAW",
+	"MKNOD",
+	"AUDIT_WRITE",
+	"SETFCAP",
+];
+
+// Swarm services have no no-new-privileges option (it only exists for plain
+// containers and Compose, see hardenComposeServices).
+const TENANT_CONTAINER_SPEC = {
+	CapabilityDrop: TENANT_DROPPED_CAPABILITIES,
+};
+
+const CONTAINER_SPEC_KEY = "olympeContainerSpec";
+
+export const tenantContainerSpec = (service: object): Record<string, unknown> =>
+	(service as { [CONTAINER_SPEC_KEY]?: Record<string, unknown> })[
+		CONTAINER_SPEC_KEY
+	] ?? {};
+
 export const enforceTenantServicePolicy = async <T extends SwarmService>(
 	service: T,
 ): Promise<T> => {
@@ -110,6 +132,7 @@ export const enforceTenantServicePolicy = async <T extends SwarmService>(
 		...service,
 		cpuLimit: String(Math.round(limits.cpu * NANO_CPUS)),
 		memoryLimit: String(limits.memoryMb * MB),
+		[CONTAINER_SPEC_KEY]: TENANT_CONTAINER_SPEC,
 	};
 };
 
@@ -311,6 +334,24 @@ export const checkTenantCompose = async (
 
 // The final compose, after Olympe added its labels: moves it from
 // dokploy-network to the client's own network and applies the quotas.
+// Runs after checkTenantCompose, which refuses cap_add and security_opt from
+// the client, so these lists only ever hold what Olympe puts there.
+export const hardenComposeServices = (spec: ComposeSpecLike) => {
+	for (const service of Object.values(spec.services ?? {})) {
+		if (!service || typeof service !== "object") continue;
+		const dropped = Array.isArray(service.cap_drop) ? service.cap_drop : [];
+		service.cap_drop = [
+			...new Set([...dropped, ...TENANT_DROPPED_CAPABILITIES]),
+		];
+		const options = Array.isArray(service.security_opt)
+			? service.security_opt
+			: [];
+		if (!options.includes("no-new-privileges:true")) {
+			service.security_opt = [...options, "no-new-privileges:true"];
+		}
+	}
+};
+
 export const finalizeTenantCompose = async (
 	compose: ComposeLike,
 	spec: ComposeSpecLike,
@@ -320,6 +361,7 @@ export const finalizeTenantCompose = async (
 	replaceNetworkName(spec, "dokploy-network", network);
 
 	const total = applyComposeLimits(spec, tenant);
+	hardenComposeServices(spec);
 	const others = await reservedByOthers(tenant.organizationId, compose.appName);
 	const problem = checkBudget(tenant.plan, others, total);
 	if (problem) throw new TenantPolicyError([problem]);

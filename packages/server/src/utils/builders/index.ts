@@ -6,7 +6,11 @@ import { resolveServiceNetworks } from "@dokploy/server/services/network";
 import { findRegistryByIdWithCredentials } from "@dokploy/server/services/registry";
 import type { InferResultType } from "@dokploy/server/types/with";
 import type { CreateServiceOptions } from "dockerode";
-import { enforceTenantServicePolicy } from "../../services/olympe/enforce";
+import { isolatedDockerConfig } from "../../services/olympe/docker-config";
+import {
+	enforceTenantServicePolicy,
+	tenantContainerSpec,
+} from "../../services/olympe/enforce";
 import { getRegistryTag, uploadImageRemoteCommand } from "../cluster/upload";
 import { buildDokployLabels } from "../docker/dokploy-labels";
 import {
@@ -114,7 +118,7 @@ export const getBuildCommand = async (rawApplication: ApplicationNested) => {
 		command += await uploadImageRemoteCommand(application);
 	}
 
-	return command;
+	return `${(await isolatedDockerConfig(application)).setup}${command}`;
 };
 
 export const mechanizeDockerContainer = async (
@@ -177,6 +181,7 @@ export const mechanizeDockerContainer = async (
 		Name: appName,
 		TaskTemplate: {
 			ContainerSpec: {
+				...tenantContainerSpec(application),
 				HealthCheck,
 				Image: image,
 				Env: envVariables,

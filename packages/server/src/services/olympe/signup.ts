@@ -27,10 +27,16 @@ const DISPOSABLE_DOMAINS = [
 	"emailondeck.com",
 ];
 
-export const clientIpFrom = (headers?: Headers | null) => {
+// Traefik overwrites X-Real-Ip and X-Forwarded-For with the socket address of
+// untrusted clients, so these are the headers a visitor cannot choose.
+export const clientIpFrom = (
+	headers?: Headers | null,
+	trustCloudflare = getOlympeConfig().trustCloudflareIp,
+) => {
 	if (!headers) return "unknown";
+	const cloudflare = trustCloudflare ? headers.get("cf-connecting-ip") : null;
 	return (
-		headers.get("cf-connecting-ip") ??
+		cloudflare ??
 		headers.get("x-real-ip") ??
 		headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
 		"unknown"

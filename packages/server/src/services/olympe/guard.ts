@@ -14,6 +14,7 @@ import { getRemoteDocker } from "@dokploy/server/utils/servers/remote-docker";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { getOlympeConfig } from "./config";
+import { checkOutboundInput } from "./outbound";
 import { checkDomainHost, isOwnVolumeName } from "./policy";
 import {
 	assertWithinCreationLimit,
@@ -170,7 +171,27 @@ const BLOCKED_PATHS = new Set([
 	"server.getServerMetrics",
 	"server.updateBuildsConcurrency",
 	"user.getServerMetrics",
+	"user.getMetricsToken",
 ]);
+
+// Routers whose inputs carry URLs or hosts the panel itself will contact.
+const OUTBOUND_ROUTERS = new Set([
+	"ai",
+	"deployDiagnosis",
+	"destination",
+	"gitea",
+	"github",
+	"gitlab",
+	"notification",
+	"registry",
+	"telemetryProvider",
+	"vaultProvider",
+]);
+
+const DATABASE_ROUTERS = new Set(["postgres", "mysql", "mariadb", "mongo"]);
+
+// The user name ends up inside SQL statements such as ALTER USER.
+export const DATABASE_USER_PATTERN = /^[A-Za-z_][A-Za-z0-9_.-]{0,62}$/;
 
 // Mutations a suspended client can still make: paying, profile, leaving.
 const ALLOWED_WHEN_SUSPENDED = new Set([
@@ -327,6 +348,16 @@ const checkProcedure = async (
 		if (problem) forbid(`Domaine des previews refusé : ${problem}.`);
 	}
 
+	if (
+		DATABASE_ROUTERS.has(router) &&
+		typeof input?.databaseUser === "string" &&
+		!DATABASE_USER_PATTERN.test(input.databaseUser)
+	) {
+		forbid(
+			"Nom d'utilisateur refusé : lettres, chiffres, « _ », « . » et « - » uniquement, en commençant par une lettre.",
+		);
+	}
+
 	switch (router) {
 		case "docker":
 			return checkDocker(procedure, input, organizationId);
@@ -416,6 +447,11 @@ export const evaluateTenantRequest = async ({
 		input && typeof input === "object" ? input : undefined
 	) as AnyInput;
 	if (policy === "checked") await checkProcedure(path, data, organizationId);
+
+	if (OUTBOUND_ROUTERS.has(router)) {
+		const problem = await checkOutboundInput(data);
+		if (problem) forbid(`Adresse refusée : ${problem}.`);
+	}
 
 	if (type !== "mutation") return;
 

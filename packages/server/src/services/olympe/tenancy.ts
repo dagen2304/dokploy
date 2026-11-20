@@ -133,3 +133,32 @@ export const findDomainOwners = async (host: string): Promise<string[]> => {
 		.map((row) => row.organizationId)
 		.filter((value): value is string => Boolean(value));
 };
+
+type ServerSettingsView = {
+	letsEncryptEmail?: string | null;
+	telemetryProviderIds?: unknown;
+	vectorAgentOrganizationId?: string | null;
+	metricsConfig?: {
+		server?: { token?: string; urlCallback?: string } & Record<string, unknown>;
+	} & Record<string, unknown>;
+};
+
+// Clients share the operator's server: they may read its public address but
+// not the monitoring token (which reads every container's metrics) nor the
+// operator's own contact and telemetry settings.
+export const redactServerSettingsForClient = <T extends ServerSettingsView>(
+	settings: T,
+): T => ({
+	...settings,
+	letsEncryptEmail: null,
+	telemetryProviderIds: [],
+	vectorAgentOrganizationId: null,
+	metricsConfig: {
+		...settings.metricsConfig,
+		server: {
+			...settings.metricsConfig?.server,
+			token: "",
+			urlCallback: "",
+		},
+	},
+});
