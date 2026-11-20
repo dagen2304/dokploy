@@ -24,7 +24,10 @@ export const OnboardingShell = ({
 	skipLabel = "Skip all",
 	children,
 }: Props) => (
-	<div className="fixed inset-0 z-50 flex flex-col md:flex-row bg-background text-foreground">
+	<div
+		data-translate-mono
+		className="fixed inset-0 z-50 flex flex-col md:flex-row bg-background text-foreground"
+	>
 		<aside className="relative shrink-0 md:w-[300px] lg:w-[340px] overflow-hidden bg-zinc-950 text-zinc-400">
 			<div
 				className="pointer-events-none absolute inset-0 opacity-[0.07]"
