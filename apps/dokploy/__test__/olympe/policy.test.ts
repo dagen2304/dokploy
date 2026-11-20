@@ -160,9 +160,28 @@ describe("service checks", () => {
 			checkBuildPaths({
 				dockerContextPath: "../../../",
 				dockerfile: "Dockerfile",
-				buildPath: "/",
+				buildPath: "/../../etc",
+				giteaBuildPath: "~/.ssh",
 			}),
-		).toHaveLength(2);
+		).toEqual([
+			"dockerContextPath « ../../../ » sort du dossier du projet",
+			"buildPath « /../../etc » sort du dossier du projet",
+			"giteaBuildPath « ~/.ssh » sort du dossier du projet",
+		]);
+	});
+
+	it("reads a leading slash as the project root, like Dokploy", () => {
+		expect(
+			checkBuildPaths({
+				buildPath: "/",
+				gitlabBuildPath: "/",
+				bitbucketBuildPath: "/",
+				giteaBuildPath: "/",
+				customGitBuildPath: "/apps/web",
+				dockerfile: "Dockerfile",
+				composePath: "./docker-compose.yml",
+			}),
+		).toEqual([]);
 	});
 });
 

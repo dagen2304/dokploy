@@ -286,13 +286,16 @@ export const checkSwarmSettings = (
 	return problems;
 };
 
+// Build paths are joined under the project's code folder (path.join), so a
+// leading "/" means the project root: Dokploy's default value is "/".
 export const checkBuildPaths = (
 	fields: Record<string, string | null | undefined>,
 ): string[] =>
 	Object.entries(fields)
 		.filter(
 			([, value]) =>
-				typeof value === "string" && !isContainedRelativePath(value),
+				typeof value === "string" &&
+				!isContainedRelativePath(value.trim().replace(/^\/+/, "")),
 		)
 		.map(([field, value]) => `${field} « ${value} » sort du dossier du projet`);
 
