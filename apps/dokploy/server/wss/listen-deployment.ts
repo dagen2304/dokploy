@@ -6,6 +6,7 @@ import {
 	IS_CLOUD,
 	validateRequest,
 } from "@dokploy/server";
+import { isTenantServerOf } from "@dokploy/server/services/olympe/placement";
 import { encodeBase64 } from "@dokploy/server/utils/docker/utils";
 import { readValidDirectory } from "@dokploy/server/wss/utils";
 import { Client } from "ssh2";
@@ -111,7 +112,10 @@ export const setupDeploymentLogsWebSocketServer = (
 					return;
 				}
 
-				if (server.organizationId !== session.activeOrganizationId) {
+				if (
+					server.organizationId !== session.activeOrganizationId &&
+					!isTenantServerOf(session.activeOrganizationId, server.serverId)
+				) {
 					ws.close();
 					return;
 				}
