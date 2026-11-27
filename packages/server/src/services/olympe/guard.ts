@@ -15,6 +15,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { getOlympeConfig } from "./config";
 import { checkOutboundInput } from "./outbound";
+import { isTenantServerOf } from "./placement";
 import { checkDomainHost, isOwnVolumeName } from "./policy";
 import {
 	assertWithinCreationLimit,
@@ -190,6 +191,21 @@ const OUTBOUND_ROUTERS = new Set([
 
 const DATABASE_ROUTERS = new Set(["postgres", "mysql", "mariadb", "mongo"]);
 
+// Routers whose calls about a client's own service carry the server it runs
+// on. Anywhere else a client has no server to name: Olympe places its services.
+// volumeBackups is left out because it ignores the serverId it receives.
+const TENANT_SERVER_ROUTERS = new Set([
+	"backup",
+	"docker",
+	"domain",
+	"mounts",
+	"network",
+	"schedule",
+]);
+
+const SERVER_MESSAGE =
+	"Le serveur d'exécution est choisi par Olympe : vous ne pouvez pas en désigner un.";
+
 // The user name ends up inside SQL statements such as ALTER USER.
 export const DATABASE_USER_PATTERN = /^[A-Za-z_][A-Za-z0-9_.-]{0,62}$/;
 
@@ -324,6 +340,28 @@ const checkVolumeBackup = async (input: AnyInput) => {
 	}
 };
 
+export const checkServerChoice = (
+	path: string,
+	input: AnyInput,
+	organizationId: string,
+) => {
+	const [router = ""] = path.split(".");
+	if (
+		router !== "volumeBackups" &&
+		typeof input?.serverId === "string" &&
+		input.serverId &&
+		input.serverId !== "none" &&
+		(!TENANT_SERVER_ROUTERS.has(router) ||
+			!isTenantServerOf(organizationId, input.serverId))
+	) {
+		forbid(SERVER_MESSAGE);
+	}
+	if (input?.buildServerId) forbid(SERVER_MESSAGE);
+	if (path === "deployment.allByType" && input?.type === "server") {
+		forbid(OPERATOR_ONLY);
+	}
+};
+
 const checkProcedure = async (
 	path: string,
 	input: AnyInput,
@@ -383,7 +421,8 @@ const checkProcedure = async (
 		case "schedule":
 			if (
 				(procedure === "create" || procedure === "update") &&
-				input?.scheduleType === "dokploy-server"
+				(input?.scheduleType === "dokploy-server" ||
+					input?.scheduleType === "server")
 			) {
 				forbid(
 					"Les tâches planifiées sur le serveur Olympe sont réservées à l'administrateur.",
@@ -446,6 +485,7 @@ export const evaluateTenantRequest = async ({
 	const data = (
 		input && typeof input === "object" ? input : undefined
 	) as AnyInput;
+	checkServerChoice(path, data, organizationId);
 	if (policy === "checked") await checkProcedure(path, data, organizationId);
 
 	if (OUTBOUND_ROUTERS.has(router)) {

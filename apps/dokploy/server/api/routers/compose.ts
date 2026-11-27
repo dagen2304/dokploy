@@ -38,6 +38,7 @@ import {
 import { paths } from "@dokploy/server/constants";
 import { db } from "@dokploy/server/db";
 import { canEditDeployGitSource } from "@dokploy/server/services/git-provider";
+import { tenantServerIdForEnvironment } from "@dokploy/server/services/olympe/placement";
 import {
 	addNewService,
 	checkEnvironmentAccess,
@@ -632,9 +633,12 @@ export const composeRouter = createTRPCRouter({
 			let serverIp = "127.0.0.1";
 
 			const project = await findProjectById(environment.projectId);
+			const placedServerId =
+				(await tenantServerIdForEnvironment(input.environmentId)) ??
+				input.serverId;
 
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
+			if (placedServerId) {
+				const server = await findServerById(placedServerId);
 				serverIp = server.ipAddress;
 			} else if (process.env.NODE_ENV === "development") {
 				serverIp = "127.0.0.1";

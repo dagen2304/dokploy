@@ -103,6 +103,7 @@ export const getOlympeConfig = (env: Env = process.env) => {
 			Boolean(env.SMTP_SERVER?.trim()) &&
 			!flag(env.OLYMPE_SKIP_EMAIL_VERIFICATION),
 		buildConcurrencyEnforced: !flag(env.OLYMPE_DISABLE_BUILD_QUEUE),
+		tenantServerId: env.OLYMPE_TENANT_SERVER_ID?.trim() || null,
 	};
 };
 

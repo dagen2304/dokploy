@@ -209,7 +209,7 @@ export const applicationRouter = createTRPCRouter({
 			const host = await generateTraefikMeDomain(
 				newApplication.appName,
 				ctx.user.ownerId,
-				input.serverId,
+				newApplication.serverId ?? undefined,
 			);
 
 			const domain = await createDomain({
@@ -233,8 +233,8 @@ export const applicationRouter = createTRPCRouter({
 				descriptionLog: "",
 				type: "deploy",
 				applicationType: "application",
-				server: !!input.serverId,
-				serverId: input.serverId,
+				server: !!newApplication.serverId,
+				serverId: newApplication.serverId ?? undefined,
 			};
 
 			if (IS_CLOUD && input.serverId) {

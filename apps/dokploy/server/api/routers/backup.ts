@@ -37,6 +37,7 @@ import {
 	findDestinationById,
 	findDestinationByIdForOrganization,
 } from "@dokploy/server/services/destination";
+import { isTenantServerOf } from "@dokploy/server/services/olympe/placement";
 import { checkServicePermissionAndAccess } from "@dokploy/server/services/permission";
 import { runComposeBackup } from "@dokploy/server/utils/backups/compose";
 import {
@@ -549,7 +550,11 @@ export const backupRouter = createTRPCRouter({
 				if (input.serverId) {
 					const targetServer = await findServerById(input.serverId);
 					if (
-						targetServer.organizationId !== ctx.session.activeOrganizationId
+						targetServer.organizationId !== ctx.session.activeOrganizationId &&
+						!isTenantServerOf(
+							ctx.session.activeOrganizationId,
+							targetServer.serverId,
+						)
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",

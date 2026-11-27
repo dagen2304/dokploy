@@ -16,6 +16,7 @@ import { TRPCError } from "@trpc/server";
 import { eq, getTableColumns } from "drizzle-orm";
 import { quote } from "shell-quote";
 import type { z } from "zod";
+import { placeTenantService } from "./olympe/placement";
 import { validUniqueServerAppName } from "./project";
 
 export type Mariadb = typeof mariadb.$inferSelect;
@@ -36,7 +37,7 @@ export const createMariadb = async (
 	const newMariadb = await db
 		.insert(mariadb)
 		.values({
-			...input,
+			...(await placeTenantService(input)),
 			databasePassword: input.databasePassword
 				? input.databasePassword
 				: generatePassword(),

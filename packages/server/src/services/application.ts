@@ -45,6 +45,7 @@ import {
 	issueCommentExists,
 	updateIssueComment,
 } from "./github";
+import { placeTenantService } from "./olympe/placement";
 import { generateApplyPatchesCommand } from "./patch";
 import {
 	findPreviewDeploymentById,
@@ -70,7 +71,7 @@ export const createApplication = async (
 		const newApplication = await tx
 			.insert(applications)
 			.values({
-				...input,
+				...(await placeTenantService(input)),
 				appName,
 			})
 			.returning()
