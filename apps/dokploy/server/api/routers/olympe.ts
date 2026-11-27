@@ -1,5 +1,5 @@
 import { db } from "@dokploy/server/db";
-import { olympePlan } from "@dokploy/server/db/schema";
+import { olympePlan, server } from "@dokploy/server/db/schema";
 import {
 	BILLING_DURATIONS,
 	completePayment,
@@ -23,6 +23,12 @@ import {
 } from "@dokploy/server/services/olympe/billing";
 import { getOlympeConfig } from "@dokploy/server/services/olympe/config";
 import { measureDiskUsage } from "@dokploy/server/services/olympe/jobs";
+import {
+	listServicesToMigrate,
+	MIGRATABLE_TYPES,
+	type MigratableType,
+	migrateToTenantServer,
+} from "@dokploy/server/services/olympe/migration";
 import { isolateExistingServices } from "@dokploy/server/services/olympe/network";
 import { getOrganizationUsage } from "@dokploy/server/services/olympe/quotas";
 import { hasSelfSignedUp } from "@dokploy/server/services/olympe/signup";
@@ -302,5 +308,52 @@ ${simulated ? '<p class="warn">Paiement simulé : document de test sans valeur c
 			return report;
 		}),
 		measureDisk: operatorProcedure.mutation(() => measureDiskUsage()),
+		migration: operatorProcedure.query(async () => {
+			const { tenantServerId } = getOlympeConfig();
+			const target = tenantServerId
+				? await db.query.server.findFirst({
+						where: eq(server.serverId, tenantServerId),
+						columns: { name: true, ipAddress: true },
+					})
+				: null;
+			return {
+				target: target ?? null,
+				services: await listServicesToMigrate(),
+			};
+		}),
+		migrate: operatorProcedure
+			.input(
+				z.object({
+					serviceType: z.enum(
+						MIGRATABLE_TYPES as [MigratableType, ...MigratableType[]],
+					),
+					serviceId: z.string().min(1),
+				}),
+			)
+			.subscription(async function* ({ input, signal }) {
+				const queue: string[] = [];
+				let done = false;
+				const log = (line: string) => queue.push(line);
+
+				migrateToTenantServer(input, log)
+					.then(() => log("Migration terminée ✅"))
+					.catch((error) => {
+						log(
+							`Migration échouée ❌ ${error instanceof Error ? error.message : String(error)}`,
+						);
+					})
+					.finally(() => {
+						done = true;
+					});
+
+				while (!done || queue.length > 0) {
+					if (signal?.aborted) return;
+					if (queue.length > 0) {
+						yield queue.shift()!;
+					} else {
+						await new Promise((resolve) => setTimeout(resolve, 50));
+					}
+				}
+			}),
 	}),
 });

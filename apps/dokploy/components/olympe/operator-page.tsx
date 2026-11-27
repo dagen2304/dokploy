@@ -43,6 +43,7 @@ import {
 	formatXaf,
 	STATUS_LABELS,
 } from "./format";
+import { MigrationCard } from "./migration-card";
 
 type Plan = RouterOutputs["olympe"]["operator"]["plans"][number];
 
@@ -552,6 +553,8 @@ export const OperatorPage = () => {
 					</Table>
 				</CardContent>
 			</Card>
+
+			<MigrationCard />
 
 			{editing && (
 				<PlanDialog plan={editing} onClose={() => setEditing(null)} />
