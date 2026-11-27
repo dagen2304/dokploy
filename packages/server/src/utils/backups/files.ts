@@ -12,6 +12,7 @@ import {
 import { findServerById } from "@dokploy/server/services/server";
 import { TRPCError } from "@trpc/server";
 import { quote } from "shell-quote";
+import { isTenantServerOf } from "../../services/olympe/placement";
 import { ExecError, execAsync, execAsyncRemote } from "../process/execAsync";
 import { redactRcloneCredentials } from "./redact";
 import { getBackupFolder, getS3Credentials } from "./utils";
@@ -79,7 +80,10 @@ export const resolveBackupAccess = async (
 	const serverId = getBackupServerId(backup);
 	if (serverId) {
 		const server = await findServerById(serverId);
-		if (server.organizationId !== ctx.session.activeOrganizationId) {
+		if (
+			server.organizationId !== ctx.session.activeOrganizationId &&
+			!isTenantServerOf(ctx.session.activeOrganizationId, server.serverId)
+		) {
 			throw new TRPCError({
 				code: "UNAUTHORIZED",
 				message: "You don't have access to this server.",

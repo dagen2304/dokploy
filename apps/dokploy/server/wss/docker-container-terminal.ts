@@ -1,5 +1,6 @@
 import type http from "node:http";
 import { findServerById, IS_CLOUD, validateRequest } from "@dokploy/server";
+import { isTenantServerOf } from "@dokploy/server/services/olympe/placement";
 import { spawn } from "node-pty";
 import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
@@ -86,7 +87,10 @@ export const setupDockerContainerTerminalWebSocketServer = (
 			if (serverId) {
 				const server = await findServerById(serverId);
 
-				if (server.organizationId !== session.activeOrganizationId) {
+				if (
+					server.organizationId !== session.activeOrganizationId &&
+					!isTenantServerOf(session.activeOrganizationId, server.serverId)
+				) {
 					ws.close();
 					return;
 				}
@@ -152,7 +156,7 @@ export const setupDockerContainerTerminalWebSocketServer = (
 									}
 									stream.write(text);
 								} catch (error) {
-									// @ts-ignore
+									// @ts-expect-error
 									const errorMessage = error?.message as unknown as string;
 									ws.send(errorMessage);
 								}
@@ -211,14 +215,14 @@ export const setupDockerContainerTerminalWebSocketServer = (
 						}
 						ptyProcess.write(text);
 					} catch (error) {
-						// @ts-ignore
+						// @ts-expect-error
 						const errorMessage = error?.message as unknown as string;
 						ws.send(errorMessage);
 					}
 				});
 			}
 		} catch (error) {
-			// @ts-ignore
+			// @ts-expect-error
 			const errorMessage = error?.message as unknown as string;
 
 			ws.send(errorMessage);

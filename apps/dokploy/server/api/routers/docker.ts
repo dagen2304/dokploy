@@ -20,6 +20,7 @@ import {
 	uploadFileToContainer,
 	writeContainerFile,
 } from "@dokploy/server";
+import { isTenantServerOf } from "@dokploy/server/services/olympe/placement";
 import { checkPermission } from "@dokploy/server/services/permission";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -49,7 +50,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -69,7 +73,10 @@ export const dockerRouter = createTRPCRouter({
 			await checkPermission(ctx, { docker: ["read"], server: ["read"] });
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -94,7 +101,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -121,7 +131,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -148,7 +161,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -175,7 +191,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -202,7 +221,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -229,7 +251,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -248,7 +273,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -271,7 +299,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -293,7 +324,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -311,7 +345,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -324,7 +361,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -367,7 +407,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -393,7 +436,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -420,7 +466,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -456,7 +505,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -480,7 +532,10 @@ export const dockerRouter = createTRPCRouter({
 			await assertServerAccess(ctx.session, input.serverId ?? null);
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session?.activeOrganizationId &&
+					!isTenantServerOf(ctx.session?.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
