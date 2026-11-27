@@ -54,6 +54,7 @@ import { deployMariadb, findMariadbById, updateMariadbById } from "./mariadb";
 import { deployMongo, findMongoById, updateMongoById } from "./mongo";
 import { createFileMount } from "./mount";
 import { deployMySql, findMySqlById, updateMySqlById } from "./mysql";
+import { isTenantServerOf } from "./olympe/placement";
 import {
 	deployPostgres,
 	findPostgresById,
@@ -470,7 +471,10 @@ export const transferService = async (
 		? await findServerById(targetServerId)
 		: null;
 	if (targetServer) {
-		if (targetServer.organizationId !== input.organizationId) {
+		if (
+			targetServer.organizationId !== input.organizationId &&
+			!isTenantServerOf(input.organizationId, targetServer.serverId)
+		) {
 			throw new TRPCError({
 				code: "UNAUTHORIZED",
 				message: "You are not authorized to use the target server",
