@@ -16,6 +16,7 @@ import {
 	updateDomainById,
 	validateDomain,
 } from "@dokploy/server";
+import { isTenantServerOf } from "@dokploy/server/services/olympe/placement";
 import { checkServicePermissionAndAccess } from "@dokploy/server/services/permission";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -284,7 +285,10 @@ export const domainRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			if (input.serverId) {
 				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session.activeOrganizationId) {
+				if (
+					server.organizationId !== ctx.session.activeOrganizationId &&
+					!isTenantServerOf(ctx.session.activeOrganizationId, server.serverId)
+				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this server",

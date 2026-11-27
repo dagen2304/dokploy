@@ -11,6 +11,7 @@ import { getWebServerSettings } from "@dokploy/server/services/web-server-settin
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, isNotNull } from "drizzle-orm";
 import type { z } from "zod";
+import { isTenantServerOf } from "./olympe/placement";
 
 export type Server = typeof server.$inferSelect;
 
@@ -281,7 +282,10 @@ export const findServerInOrganization = async (
 	organizationId: string,
 ) => {
 	const currentServer = await findServerById(serverId);
-	if (currentServer.organizationId !== organizationId) {
+	if (
+		currentServer.organizationId !== organizationId &&
+		!isTenantServerOf(organizationId, serverId)
+	) {
 		throw new TRPCError({
 			code: "UNAUTHORIZED",
 			message: "You are not authorized to access this server",
@@ -334,6 +338,10 @@ export const assertServerAccess = async (
 		}
 		return;
 	}
+	// Olympe: the guard only lets a client name the tenant server on routes that
+	// act on its own services (ownership checked there), so this never opens
+	// server-wide tools such as the host terminal.
+	if (isTenantServerOf(session.activeOrganizationId, serverId)) return;
 	const accessible = await getAccessibleServerIds(session);
 	if (!accessible.has(serverId)) {
 		throw new TRPCError({ code: "UNAUTHORIZED" });

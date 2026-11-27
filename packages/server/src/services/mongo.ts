@@ -17,6 +17,7 @@ import { TRPCError } from "@trpc/server";
 import { eq, getTableColumns } from "drizzle-orm";
 import { quote } from "shell-quote";
 import type { z } from "zod";
+import { placeTenantService } from "./olympe/placement";
 import { validUniqueServerAppName } from "./project";
 
 export type Mongo = typeof mongo.$inferSelect;
@@ -35,7 +36,7 @@ export const createMongo = async (input: z.infer<typeof apiCreateMongo>) => {
 	const newMongo = await db
 		.insert(mongo)
 		.values({
-			...input,
+			...(await placeTenantService(input)),
 			databasePassword: input.databasePassword
 				? input.databasePassword
 				: generatePassword(),

@@ -14,13 +14,17 @@ import {
 	projects,
 	redis,
 } from "@dokploy/server/db/schema";
-import { execAsync } from "@dokploy/server/utils/process/execAsync";
+import {
+	execAsync,
+	execAsyncRemote,
+} from "@dokploy/server/utils/process/execAsync";
 import { eq, inArray, lt } from "drizzle-orm";
 import { scheduleJob } from "node-schedule";
 import { quote } from "shell-quote";
 import { listTrash } from "../trash";
 import { notifyOwners, runBillingCycle } from "./billing";
 import { getOlympeConfig } from "./config";
+import { tenantServerId } from "./placement";
 import { isClientOrganization } from "./tenancy";
 import { getTenant } from "./tenants";
 import { closeTraefikInsecureApi } from "./traefik";
@@ -74,8 +78,22 @@ const SERVICE_TABLES = [
 	libsql,
 ] as const;
 
-const localAppNamesByOrganization = async () => {
-	const owners = new Map<string, string>();
+type Host = string | null;
+
+// The main server, plus the tenant server when client workloads run there.
+const clientHosts = (): Host[] => {
+	const tenantServer = tenantServerId();
+	return tenantServer ? [null, tenantServer] : [null];
+};
+
+const runOn = (host: Host, command: string) =>
+	host ? execAsyncRemote(host, command) : execAsync(command);
+
+const clientAppNamesByHost = async () => {
+	const hosts = clientHosts();
+	const owners = new Map<Host, Map<string, string>>(
+		hosts.map((host) => [host, new Map()]),
+	);
 	for (const table of SERVICE_TABLES) {
 		const rows = await db
 			.select({
@@ -90,40 +108,61 @@ const localAppNamesByOrganization = async () => {
 			)
 			.innerJoin(projects, eq(projects.projectId, environments.projectId));
 		for (const row of rows) {
-			if (!row.serverId && isClientOrganization(row.organizationId)) {
-				owners.set(row.appName, row.organizationId);
+			const onHost = owners.get(row.serverId ?? null);
+			if (onHost && isClientOrganization(row.organizationId)) {
+				onHost.set(row.appName, row.organizationId);
 			}
 		}
 	}
 	return owners;
 };
 
-// Volumes on the main server only: a client's own remote server is its disk.
+// Volumes on the servers Olympe runs clients on; a client's own remote server
+// is its own disk.
 export const measureDiskUsage = async () => {
-	const owners = await localAppNamesByOrganization();
-	if (owners.size === 0) return;
-
-	const { stdout } = await execAsync(
-		"docker system df -v --format '{{json .Volumes}}'",
-	);
-	const volumes = JSON.parse(stdout.trim() || "[]") as {
-		Name: string;
-		Size: string;
-	}[];
 	const totals = new Map<string, number>();
-	const appNames = [...owners.keys()];
-	for (const volume of volumes) {
-		const appName = ownerAppName(volume.Name, appNames);
-		if (!appName) continue;
-		const organizationId = owners.get(appName)!;
-		totals.set(
-			organizationId,
-			(totals.get(organizationId) ?? 0) + parseDockerSize(volume.Size),
-		);
+	const organizations = new Set<string>();
+	// An unreachable server would understate usage: its clients keep their last
+	// measurement instead.
+	const unmeasured = new Set<string>();
+	for (const [host, owners] of await clientAppNamesByHost()) {
+		if (owners.size === 0) continue;
+		for (const organizationId of owners.values()) {
+			organizations.add(organizationId);
+		}
+		let stdout: string;
+		try {
+			({ stdout } = await runOn(
+				host,
+				"docker system df -v --format '{{json .Volumes}}'",
+			));
+		} catch (error) {
+			console.error(`[olympe] disk usage on ${host ?? "main server"}`, error);
+			for (const organizationId of owners.values()) {
+				unmeasured.add(organizationId);
+			}
+			continue;
+		}
+		const volumes = JSON.parse(stdout.trim() || "[]") as {
+			Name: string;
+			Size: string;
+		}[];
+		const appNames = [...owners.keys()];
+		for (const volume of volumes) {
+			const appName = ownerAppName(volume.Name, appNames);
+			if (!appName) continue;
+			const organizationId = owners.get(appName)!;
+			totals.set(
+				organizationId,
+				(totals.get(organizationId) ?? 0) + parseDockerSize(volume.Size),
+			);
+		}
 	}
+	if (organizations.size === 0) return;
 
 	const { diskWarnPercent } = getOlympeConfig();
-	for (const organizationId of new Set(owners.values())) {
+	for (const organizationId of organizations) {
+		if (unmeasured.has(organizationId)) continue;
 		const bytes = totals.get(organizationId) ?? 0;
 		const previous = await db.query.olympeDiskUsage.findFirst({
 			where: eq(olympeDiskUsage.organizationId, organizationId),
@@ -202,14 +241,22 @@ export const removeOrphanClientVolumes = async () => {
 		.filter((appName) => !live.has(appName));
 	if (gone.length === 0) return [];
 
-	const { stdout } = await execAsync("docker volume ls --format '{{.Name}}'");
 	const removed: string[] = [];
-	for (const volume of selectOrphanVolumes(stdout.split("\n"), gone, live)) {
+	for (const host of clientHosts()) {
+		let stdout: string;
 		try {
-			await execAsync(`docker volume rm ${quote([volume])}`);
-			removed.push(volume);
+			({ stdout } = await runOn(host, "docker volume ls --format '{{.Name}}'"));
 		} catch (error) {
-			console.error(`[olympe] orphan volume ${volume}`, error);
+			console.error(`[olympe] volumes on ${host ?? "main server"}`, error);
+			return removed;
+		}
+		for (const volume of selectOrphanVolumes(stdout.split("\n"), gone, live)) {
+			try {
+				await runOn(host, `docker volume rm ${quote([volume])}`);
+				removed.push(volume);
+			} catch (error) {
+				console.error(`[olympe] orphan volume ${volume}`, error);
+			}
 		}
 	}
 	await db

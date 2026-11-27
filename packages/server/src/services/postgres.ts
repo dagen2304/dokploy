@@ -16,6 +16,7 @@ import { TRPCError } from "@trpc/server";
 import { eq, getTableColumns } from "drizzle-orm";
 import { quote } from "shell-quote";
 import type { z } from "zod";
+import { placeTenantService } from "./olympe/placement";
 import { validUniqueServerAppName } from "./project";
 
 export function getMountPath(dockerImage: string): string {
@@ -49,7 +50,7 @@ export const createPostgres = async (
 	const newPostgres = await db
 		.insert(postgres)
 		.values({
-			...input,
+			...(await placeTenantService(input)),
 			databasePassword: input.databasePassword
 				? input.databasePassword
 				: generatePassword(),

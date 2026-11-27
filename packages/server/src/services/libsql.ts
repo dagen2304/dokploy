@@ -16,6 +16,7 @@ import { TRPCError } from "@trpc/server";
 import { eq, getTableColumns } from "drizzle-orm";
 import { quote } from "shell-quote";
 import type { z } from "zod";
+import { placeTenantService } from "./olympe/placement";
 import { validUniqueServerAppName } from "./project";
 
 export type Libsql = typeof libsql.$inferSelect;
@@ -34,7 +35,7 @@ export const createLibsql = async (input: z.infer<typeof apiCreateLibsql>) => {
 	const newLibsql = await db
 		.insert(libsql)
 		.values({
-			...input,
+			...(await placeTenantService(input)),
 			databasePassword: input.databasePassword
 				? input.databasePassword
 				: generatePassword(),

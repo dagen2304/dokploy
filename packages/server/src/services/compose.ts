@@ -42,6 +42,7 @@ import {
 	updateDeploymentStatus,
 	writeDeploymentErrorLog,
 } from "./deployment";
+import { placeTenantService } from "./olympe/placement";
 import { generateApplyPatchesCommand } from "./patch";
 import { validUniqueServerAppName } from "./project";
 
@@ -63,7 +64,7 @@ export const createCompose = async (
 	const newDestination = await db
 		.insert(compose)
 		.values({
-			...input,
+			...(await placeTenantService(input)),
 			composeFile: input.composeFile || "",
 			appName,
 		})
@@ -97,7 +98,7 @@ export const createComposeByTemplate = async (
 	const newDestination = await db
 		.insert(compose)
 		.values({
-			...input,
+			...(await placeTenantService(input)),
 			appName,
 		})
 		.returning()

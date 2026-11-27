@@ -15,6 +15,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { quote } from "shell-quote";
 import type { z } from "zod";
+import { placeTenantService } from "./olympe/placement";
 import { validUniqueServerAppName } from "./project";
 
 export type Redis = typeof redis.$inferSelect;
@@ -34,7 +35,7 @@ export const createRedis = async (input: z.infer<typeof apiCreateRedis>) => {
 	const newRedis = await db
 		.insert(redis)
 		.values({
-			...input,
+			...(await placeTenantService(input)),
 			databasePassword: input.databasePassword
 				? input.databasePassword
 				: generatePassword(),
