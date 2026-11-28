@@ -1,4 +1,8 @@
 import { IS_CLOUD } from "@dokploy/server";
+import {
+	buildTimeoutMs,
+	stopRunningDeployment,
+} from "@dokploy/server/services/olympe/build-control";
 import { tenantBuildSlot } from "@dokploy/server/services/olympe/quotas";
 import {
 	execAsync,
@@ -44,6 +48,13 @@ const createNoopQueue = (): DeploymentQueue => ({
 const createInMemoryQueue = (): DeploymentQueue => {
 	const queue = new InMemoryQueue({
 		resolveConcurrency: resolveBuildsConcurrency,
+		dedupeWaiting: true,
+		timeoutMs: buildTimeoutMs(process.env),
+		onTimeout: (data) =>
+			stopRunningDeployment(
+				deploymentRefOf(data),
+				`⏱ Délai maximum dépassé (${Math.round(buildTimeoutMs(process.env) / 60_000)} min) : déploiement arrêté.`,
+			),
 		resolveTenantSlot: (data) =>
 			tenantBuildSlot({
 				applicationId: (data as { applicationId?: string }).applicationId,
@@ -124,6 +135,19 @@ export const cleanQueuesByCompose = async (composeId: string) => {
 export const cleanAllDeploymentQueue = async () => {
 	myQueue.clearWaiting();
 	return true;
+};
+
+export const deploymentRefOf = (data: DeploymentJob) => {
+	const job = data as {
+		applicationId?: string;
+		composeId?: string;
+		previewDeploymentId?: string;
+	};
+	if (data.applicationType === "application-preview") {
+		return { previewDeploymentId: job.previewDeploymentId };
+	}
+	if (data.applicationType === "compose") return { composeId: job.composeId };
+	return { applicationId: job.applicationId };
 };
 
 export const killDockerBuild = async (

@@ -38,6 +38,7 @@ import {
 import { paths } from "@dokploy/server/constants";
 import { db } from "@dokploy/server/db";
 import { canEditDeployGitSource } from "@dokploy/server/services/git-provider";
+import { stopRunningDeployment } from "@dokploy/server/services/olympe/build-control";
 import { tenantServerIdForEnvironment } from "@dokploy/server/services/olympe/placement";
 import {
 	addNewService,
@@ -79,11 +80,7 @@ import {
 	projects,
 } from "@/server/db/schema";
 import type { DeploymentJob } from "@/server/queues/queue-types";
-import {
-	cleanQueuesByCompose,
-	killDockerBuild,
-	myQueue,
-} from "@/server/queues/queueSetup";
+import { cleanQueuesByCompose, myQueue } from "@/server/queues/queueSetup";
 import { cancelDeployment, deploy } from "@/server/utils/deploy";
 import { containerBelongsToService } from "@/server/wss/container-ownership";
 import { generatePassword } from "@/templates/utils";
@@ -322,7 +319,10 @@ export const composeRouter = createTRPCRouter({
 				deployment: ["cancel"],
 			});
 			const compose = await findComposeById(input.composeId);
-			await killDockerBuild("compose", compose.serverId);
+			await stopRunningDeployment(
+				{ composeId: compose.composeId },
+				"⏹ Déploiement arrêté à la demande.",
+			);
 		}),
 
 	loadServices: protectedProcedure

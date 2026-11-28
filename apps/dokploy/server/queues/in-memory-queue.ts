@@ -64,7 +64,18 @@ interface InternalJob {
 	partition: string;
 	group: string;
 	tenant: TenantSlot | null;
+	settled?: boolean;
 }
+
+// One waiting deployment per service is enough: a newer one makes the older
+// pointless (it would build an outdated commit). Previews are keyed apart from
+// their application, which shares their FIFO group.
+export const getDedupeKey = (data: DeploymentJob): string => {
+	if (data.applicationType === "application-preview") {
+		return `preview:${data.previewDeploymentId}`;
+	}
+	return getGroup(data);
+};
 
 /** Olympe: builds of one client organization share its plan's build slots. */
 export type TenantSlot = { key: string; limit: number };
@@ -84,6 +95,16 @@ export interface InMemoryQueueOptions {
 	 */
 	resolveConcurrency: (partition: string) => Promise<number> | number;
 	resolveTenantSlot?: (data: DeploymentJob) => Promise<TenantSlot | null>;
+	/** Drop a service's waiting job when a newer one arrives. */
+	dedupeWaiting?: boolean;
+	/**
+	 * Longest a job may stay active. `onTimeout` should stop the job's work;
+	 * if the processor still has not returned `timeoutGraceMs` later, its slot
+	 * is freed anyway so one stuck build cannot hold the queue forever.
+	 */
+	timeoutMs?: number;
+	timeoutGraceMs?: number;
+	onTimeout?: (data: DeploymentJob) => Promise<unknown>;
 	/** Monotonic clock; injectable for tests. Defaults to Date.now. */
 	now?: () => number;
 }
@@ -96,11 +117,19 @@ export class InMemoryQueue {
 	private readonly resolveConcurrency: InMemoryQueueOptions["resolveConcurrency"];
 	private readonly resolveTenantSlot: InMemoryQueueOptions["resolveTenantSlot"];
 	private readonly now: () => number;
+	private readonly dedupeWaiting: boolean;
+	private readonly timeoutMs: number;
+	private readonly timeoutGraceMs: number;
+	private readonly onTimeout: InMemoryQueueOptions["onTimeout"];
 
 	constructor(options: InMemoryQueueOptions) {
 		this.resolveConcurrency = options.resolveConcurrency;
 		this.resolveTenantSlot = options.resolveTenantSlot;
 		this.now = options.now ?? (() => Date.now());
+		this.dedupeWaiting = options.dedupeWaiting ?? false;
+		this.timeoutMs = options.timeoutMs ?? 0;
+		this.timeoutGraceMs = options.timeoutGraceMs ?? 60_000;
+		this.onTimeout = options.onTimeout;
 	}
 
 	private getPartitionState(key: string): Partition {
@@ -145,6 +174,10 @@ export class InMemoryQueue {
 				? await this.resolveTenantSlot(data).catch(() => null)
 				: null,
 		};
+		if (this.dedupeWaiting) {
+			const key = getDedupeKey(data);
+			this.removeWaiting((waiting) => getDedupeKey(waiting) === key);
+		}
 		this.getPartitionState(partitionKey).waiting.push(job);
 		this.schedule();
 		return { id };
@@ -256,21 +289,40 @@ export class InMemoryQueue {
 		}
 	}
 
+	private settle(job: InternalJob) {
+		if (job.settled) return;
+		job.settled = true;
+		job.finishedOn = this.now();
+		const partition = this.partitions.get(job.partition);
+		if (partition) {
+			partition.active = partition.active.filter((j) => j.id !== job.id);
+			partition.activeGroups.delete(job.group);
+		}
+		// A slot (and possibly the group) freed up — try to schedule more.
+		void this.drainPartition(job.partition);
+	}
+
 	private async runJob(job: InternalJob) {
+		let grace: ReturnType<typeof setTimeout> | undefined;
+		const timer =
+			this.timeoutMs > 0
+				? setTimeout(() => {
+						job.failedReason = "timeout";
+						void this.onTimeout?.(job.data).catch((error) =>
+							console.error("Stopping a timed-out deployment failed", error),
+						);
+						grace = setTimeout(() => this.settle(job), this.timeoutGraceMs);
+					}, this.timeoutMs)
+				: undefined;
 		try {
 			await this.processor?.(this.toPublic(job));
 		} catch (error) {
 			job.failedReason = error instanceof Error ? error.message : String(error);
 			console.error("In-memory deployment job failed", error);
 		} finally {
-			job.finishedOn = this.now();
-			const partition = this.partitions.get(job.partition);
-			if (partition) {
-				partition.active = partition.active.filter((j) => j.id !== job.id);
-				partition.activeGroups.delete(job.group);
-			}
-			// A slot (and possibly the group) freed up — try to schedule more.
-			void this.drainPartition(job.partition);
+			clearTimeout(timer);
+			clearTimeout(grace);
+			this.settle(job);
 		}
 	}
 }
