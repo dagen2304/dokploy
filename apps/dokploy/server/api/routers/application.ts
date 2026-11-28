@@ -39,6 +39,7 @@ import {
 } from "@dokploy/server";
 import { db } from "@dokploy/server/db";
 import { canEditDeployGitSource } from "@dokploy/server/services/git-provider";
+import { stopRunningDeployment } from "@dokploy/server/services/olympe/build-control";
 import {
 	addNewService,
 	checkEnvironmentAccess,
@@ -83,11 +84,7 @@ import {
 	projects,
 } from "@/server/db/schema";
 import type { DeploymentJob } from "@/server/queues/queue-types";
-import {
-	cleanQueuesByApplication,
-	killDockerBuild,
-	myQueue,
-} from "@/server/queues/queueSetup";
+import { cleanQueuesByApplication, myQueue } from "@/server/queues/queueSetup";
 import { cancelDeployment, deploy } from "@/server/utils/deploy";
 
 export const applicationRouter = createTRPCRouter({
@@ -922,7 +919,10 @@ export const applicationRouter = createTRPCRouter({
 				deployment: ["cancel"],
 			});
 			const application = await findApplicationById(input.applicationId);
-			await killDockerBuild("application", application.serverId);
+			await stopRunningDeployment(
+				{ applicationId: application.applicationId },
+				"⏹ Déploiement arrêté à la demande.",
+			);
 			await audit(ctx, {
 				action: "stop",
 				resourceType: "application",
